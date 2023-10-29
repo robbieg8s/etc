@@ -1,5 +1,7 @@
 #!/bin/sh
 
+set -e
+
 # Configure container
 
 # The apks add below can intermittently with
@@ -8,6 +10,7 @@
 
 ln -fns /var/cache/apk /etc/apk/cache
 apk add git
+apk add sudo
 apk add zsh
 
 # Clone config, assumes ETC_GIT set by dockerized-etc.zsh
