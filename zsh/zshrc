@@ -33,3 +33,13 @@ DIRSTACKSIZE=48
 HISTFILE="${ZSHRC_DIR}"/history
 HISTSIZE=1000
 SAVEHIST=1000
+
+# Autocompletion configuration
+zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*:*:*:*:messages' format "%d"
+
+autoload -U +X compinit && compinit
+# I've experimented with
+#   setopt automenu
+#   zstyle ':completion:*' menu select
+# to get arrow selected completion, but i need to tune/train more to like it
