@@ -11,3 +11,25 @@ bindkey "\e[3;3~" backward-delete-word # Alt-Delete
 bindkey "\e[3;9~" backward-kill-line   # Cmd-Delete
 # bindings for command mode
 # bindkey -a ...
+
+# Prompt expand %x to get current file, absolutize, head (i.e. dirname)
+ZSHRC_DIR="${$(print -P '%x'):A:h}"
+
+# Sundry zsh options
+setopt AUTO_PUSHD
+setopt GLOB_DOTS
+setopt EXTENDED_GLOB
+setopt EXTENDED_HISTORY
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_FIND_NO_DUPS
+setopt INC_APPEND_HISTORY
+setopt NO_AUTO_MENU
+setopt PUSHD_IGNORE_DUPS
+setopt PUSHD_MINUS
+setopt RC_QUOTES
+
+# Sundry zsh parameters
+DIRSTACKSIZE=48
+HISTFILE="${ZSHRC_DIR}"/history
+HISTSIZE=1000
+SAVEHIST=1000
