@@ -1,0 +1,13 @@
+# vi mode
+bindkey -v
+# bindings for insert mode
+bindkey "^J" history-beginning-search-forward
+bindkey "^K" history-beginning-search-backward
+bindkey "^X" vi-cmd-mode
+# According to my reading of https://en.wikipedia.org/wiki/ANSI_escape_code (under `Terminal input sequences`),
+# these are the vt keycodes. I've set the corresponding keystroke directly in the iTerm config to ensure that
+# they're right locally
+bindkey "\e[3;3~" backward-delete-word # Alt-Delete
+bindkey "\e[3;9~" backward-kill-line   # Cmd-Delete
+# bindings for command mode
+# bindkey -a ...
