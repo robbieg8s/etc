@@ -12,8 +12,8 @@ bindkey "\e[3;9~" backward-kill-line   # Cmd-Delete
 # bindings for command mode
 # bindkey -a ...
 
-# Prompt expand %x to get current file, absolutize, head (i.e. dirname)
-ZSHRC_DIR="${$(print -P '%x'):A:h}"
+# Prompt expand %x to get current file, absolutize
+ZSHRC="${$(print -P '%x'):A}"
 
 # Sundry zsh options
 setopt AUTO_PUSHD
@@ -30,7 +30,7 @@ setopt RC_QUOTES
 
 # Sundry zsh parameters
 DIRSTACKSIZE=48
-HISTFILE="${ZSHRC_DIR}"/history
+HISTFILE="${ZSHRC:h}"/history
 HISTSIZE=1000
 SAVEHIST=1000
 
@@ -44,6 +44,23 @@ SAVEHIST=1000
   [[ -e /.dockerenv ]] && local notify_docker=" docker"
   PS1="%F{red}%B:${notify_docker-};%b%f "
   PS2=':%_; '
+}
+
+() {
+  # For environment variables in the after/zshrc/env directory, source the appropriate value specific file
+  local after_envs="${ZSHRC:h}/after/${ZSHRC:t}/env"
+  local after_env
+  for after_env in "${after_envs}"/*(N)
+  do
+    local after_env_variable="${after_env:t}"
+    [[ -v "${after_env_variable}" ]] && {
+      # the variable name (taken from the directory name in the after/zshrc/env) is set,
+      # so use (P) to expand it to find the file with the variable specific code,
+      # and source it if present
+      local after_env_file="${after_env}/${(P)after_env_variable}"
+      [[ -r "${after_env_file}" ]] && source "${after_env_file}"
+    }
+  done
 }
 
 # Autocompletion configuration

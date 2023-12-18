@@ -22,6 +22,7 @@ DOCKER_APK_CACHE="/var/cache/apk"
 docker run --rm --interactive --tty \
   --entrypoint "${DOCKER_ENTRYPOINT}" \
   --env ETC_GIT="${DOCKER_GIT_REPO}" \
+  ${TERM_PROGRAM+--env} ${TERM_PROGRAM+"TERM_PROGRAM=${TERM_PROGRAM}"} \
   --hostname "dockerized-etc" \
   --volume "${HOST_APK_CACHE}:${DOCKER_APK_CACHE}" \
   --volume "${HOST_ENTRYPOINT}:${DOCKER_ENTRYPOINT}" \
