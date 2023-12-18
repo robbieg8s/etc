@@ -34,6 +34,18 @@ HISTFILE="${ZSHRC_DIR}"/history
 HISTSIZE=1000
 SAVEHIST=1000
 
+# Don't export PS variables, because other shells don't understand the zsh escapes
+# Don't forget to
+#   setopt PROMPT_SUBST
+# if you once again set variables in precmd that are used in the prompt
+() {
+  # Include a note if running dockerized.
+  # Probably would be good to extend this to "ssh'd in", etc.
+  [[ -e /.dockerenv ]] && local notify_docker=" docker"
+  PS1="%F{red}%B:${notify_docker-};%b%f "
+  PS2=':%_; '
+}
+
 # Autocompletion configuration
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*:*:*:*:messages' format "%d"
