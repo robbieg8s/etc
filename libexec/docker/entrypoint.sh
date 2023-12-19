@@ -4,7 +4,7 @@ set -e
 
 # Configure container
 
-# The apks add below can intermittently with
+# The apk adds below can fail intermittently in colima with
 # WARNING: opening from cache https://dl-cdn.alpinelinux.org/alpine/v3.18/main: No such file or directory
 # if run immediately after a cache clear.
 
