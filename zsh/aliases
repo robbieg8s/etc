@@ -1,0 +1,17 @@
+# For now i'm putting functions for interactive shells only in this file also
+# These are mostly convenience wrappers
+
+# Shell history in sqlite
+# These are for interactive use, and so fail if teh relevant variables aren't set
+
+hd() {
+  "${HALFYAK_ETC_SQLITE_HISTORY:?}" "${HALFYAK_ETC_SQLITE_HISTORY_DB:?}" directory "$@"
+}
+
+hq() {
+  "${HALFYAK_ETC_SQLITE_HISTORY:?}" "${HALFYAK_ETC_SQLITE_HISTORY_DB:?}" command "$@"
+}
+
+hs() {
+  "${HALFYAK_ETC_SQLITE_HISTORY:?}" "${HALFYAK_ETC_SQLITE_HISTORY_DB:?}" session "$@"
+}

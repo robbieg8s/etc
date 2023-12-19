@@ -12,10 +12,13 @@ bindkey "\e[3;9~" backward-kill-line   # Cmd-Delete
 # bindings for command mode
 # bindkey -a ...
 
+## Establish file system context
 # Prompt expand %x to get current file, absolutize
 ZSHRC="${$(print -P '%x'):A}"
+# We want the directory often enough also
+ETC_ZSH_DIR="${ZSHRC:h}"
 
-# Sundry zsh options
+## Sundry zsh options
 setopt AUTO_PUSHD
 setopt GLOB_DOTS
 setopt EXTENDED_GLOB
@@ -28,12 +31,13 @@ setopt PUSHD_IGNORE_DUPS
 setopt PUSHD_MINUS
 setopt RC_QUOTES
 
-# Sundry zsh parameters
+## Sundry zsh parameters
 DIRSTACKSIZE=48
-HISTFILE="${ZSHRC:h}"/history
+HISTFILE="${ETC_ZSH_DIR}"/history
 HISTSIZE=1000
 SAVEHIST=1000
 
+## Prompt
 # Don't export PS variables, because other shells don't understand the zsh escapes
 # Don't forget to
 #   setopt PROMPT_SUBST
@@ -46,6 +50,19 @@ SAVEHIST=1000
   PS2=':%_; '
 }
 
+## Configure sqlite shell history
+# db location and driver script are in set up in zshenv
+# allocate a session per shell invocation
+export HALFYAK_ETC_SQLITE_HISTORY_SESSION="$(uuidgen)"
+# hook zshaddhistory to save commands, queries have convenience aliases
+halfyak_etc_zshaddhistory_sqlite_history_save() {
+  # If things aren't set up properly, do a null command. This ensures we don't break regular history in this case.
+  # The interactive interface (see aliases file) will fail noisily to get attention.
+  "${HALFYAK_ETC_SQLITE_HISTORY:-:}" "${HALFYAK_ETC_SQLITE_HISTORY_DB}" save "${HALFYAK_ETC_SQLITE_HISTORY_SESSION}" "$@"
+}
+zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqlite_history_save)
+
+## Environment specific additional configuration
 () {
   # For environment variables in the after/zshrc/env directory, source the appropriate value specific file
   local after_envs="${ZSHRC:h}/after/${ZSHRC:t}/env"
@@ -63,7 +80,7 @@ SAVEHIST=1000
   done
 }
 
-# Autocompletion configuration
+## Autocompletion configuration
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*:*:*:*:messages' format "%d"
 
@@ -72,3 +89,9 @@ autoload -U +X compinit && compinit
 #   setopt automenu
 #   zstyle ':completion:*' menu select
 # to get arrow selected completion, but i need to tune/train more to like it
+
+## Interactive aliases
+# Remove all other aliases first - this was motivated by misbehaving utilities which add functions
+# that shadow executables, but seems reasonable enough to just do in general.
+unalias -a
+source "${ETC_ZSH_DIR}"/aliases

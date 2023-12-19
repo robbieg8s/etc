@@ -10,7 +10,9 @@ set -e
 
 ln -fns /var/cache/apk /etc/apk/cache
 apk add git
+apk add sqlite
 apk add sudo
+apk add uuidgen
 apk add zsh
 
 # Clone config, assumes ETC_GIT set by dockerized-etc.zsh
