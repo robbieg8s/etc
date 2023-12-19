@@ -63,6 +63,8 @@ halfyak_etc_zshaddhistory_sqlite_history_save() {
 zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqlite_history_save)
 
 ## Environment specific additional configuration
+# This has obvious echoes to the platform version in zshenv, but i'm not unifying them at this stage,
+# becuase i'm not sure enough of what needs to be common yet.
 () {
   # For environment variables in the after/zshrc/env directory, source the appropriate value specific file
   local after_envs="${ZSHRC:h}/after/${ZSHRC:t}/env"
@@ -76,7 +78,7 @@ zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqli
       # and source it if present
       local after_env_file="${after_env}/${(P)after_env_variable}"
       [[ -r "${after_env_file}" ]] && source "${after_env_file}"
-    }
+    } # else ignore since the variable is not set
   done
 }
 

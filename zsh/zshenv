@@ -12,3 +12,35 @@ ETC_ZSH_DIR="${ZSHENV:h}"
 export HALFYAK_ETC_SQLITE_HISTORY_DB="${HOME}/.local/share/halfyak/etc/zsh/history.sqlite3"
 # Main driver script
 export HALFYAK_ETC_SQLITE_HISTORY="${ETC_ZSH_DIR}/libexec/sqlite-history.zsh"
+
+## PATH
+# Take complete control of PATH, i don't want any external injection here
+path=(
+  # My bin, common then platform specific
+  # Note these are in this order to simplify the platform specific insertions, i don't expect
+  # to use overrides / shadowing, it's just organisational
+  "${HOME}"/bin{,/"$(uname -s)"}
+  # Standard UNIX locations - this matches the alpine default
+  {/usr{/local,},}/{sbin,bin}
+)
+
+## Platform specific additional configuration
+# This has obvious echoes to the env version in zshrc, but i'm not unifying them at this stage,
+# becuase i'm not sure enough of what needs to be common yet.
+() {
+  # Files in the after/zshenv/cmd directory are encoded commands, run the command and source the
+  # appropriate output specific file if it exists
+  local after_cmds="${ZSHENV:h}/after/${ZSHENV:t}/cmd"
+  local after_cmd
+  for after_cmd in "${after_cmds}"/*(N)
+  do
+    # Split on + as a simple way to encode command line options in the file name
+    # In the event we need a sniffer which has a + in its actual name, we can add a wrapper
+    local after_cmd_command=(${(s:+:)after_cmd:t})
+    local after_cmd_value
+    after_cmd_value="$("${(@)after_cmd_command}")" && {
+      local after_cmd_file="${after_cmd}/${after_cmd_value}"
+      [[ -r "${after_cmd_file}" ]] && source "${after_cmd_file}"
+    } # else ignore since the command failed
+  done
+}
