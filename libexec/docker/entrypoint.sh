@@ -15,10 +15,28 @@ apk add sudo
 apk add uuidgen
 apk add zsh
 
-# Clone config, assumes ETC_GIT set by dockerized-etc.zsh
-cd
-git clone "${ETC_GIT}"
-~/etc/libexec/setup.zsh
+if [ -n "${HALFYAK_USERNAME}" ]
+then
+  # Create the user with no password and the shell zsh
+  adduser -D -s /bin/zsh "${HALFYAK_USERNAME}"
+  # Allow the user to sudo
+  printf '%s ALL=(ALL) NOPASSWD: ALL\n' "${HALFYAK_USERNAME}" | EDITOR='tee -a' visudo -f /etc/sudoers.d/halfyak-etc
+  # And switch to their home - note you can't (in POSIX) use ~"${HALFYAK_USERNAME}"
+  cd "$(su -l "${HALFYAK_USERNAME}" -c pwd)"
+else
+  # Switch to root's home
+  cd
+fi
 
-# Start a configured shell
-exec zsh
+# Clone and setup as the user (default root), assumes HALFYAK_ETC_GIT set by dockerized-etc.zsh
+su "${HALFYAK_USERNAME:-root}"<<END_SETUP
+git clone "${HALFYAK_ETC_GIT}"
+~/etc/libexec/setup.zsh
+END_SETUP
+
+# Start a configured shell as the user (default root)
+# Don't use `-l` because
+# (a) Mostly i use non-login shells, so be like that
+# (b) I want to keep the environment, notably TERM_PROGRAM
+# (c) The shell is needed for root, since I don't want to chsh them
+exec su -s /bin/zsh "${HALFYAK_USERNAME:-root}"
