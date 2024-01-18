@@ -1,22 +1,31 @@
 #!/bin/zsh
-
 # Symlink configuration into a required location
+# This maintains a set of symlinks from a target location to a specific set of source files
+# defined by a pattern. The links are relative (resp. absolute) according as the source
+# pattern is relative (resp. absolute). A relative source pattern is relative to the target
+# directory, not the current working directory, as per typical ln -s behaviour.
+
+# Invoke as
+#   link-config.zsh target_prefix source_pattern
+# target_prefix includes any required per file prefix in the target
+#   location, and must end in / if no per prefix is required.
+# source_pattern is a glob for zsh ${~source_pattern}
 
 # zsh specific because we want zstat from zsh/stat
 
 set -e
 
-targetPrefix="${1:?}"
-sourcePattern="${2:?}"
+target_prefix="${1:?}"
+source_pattern="${2:?}"
 
 zmodload -F zsh/stat b:zstat
 
-needSudo() {
-  local targetDir="${1:?}"
-  if [[ ! -w "${targetDir}" ]] && [[ -z "${SUDO}" ]]
+need_sudo() {
+  local target_dir="${1:?}"
+  if [[ ! -w "${target_dir}" ]] && [[ -z "${SUDO}" ]]
   then
-    print -- "Target directory '${targetDir}' not writable, will try sudo."
-    print -- "You might get asked for your password"
+    printf "Target directory %s is not writable, will try sudo.\n" "${(q+)target_dir}"
+    printf "You might get asked for your password.\n"
     return 0
   else
     return 1
@@ -24,48 +33,52 @@ needSudo() {
 }
 
 SUDO=
-targetDir="${targetPrefix%/*}"
+target_dir="${target_prefix%/*}"
 
-if [[ ! -d "${targetDir}" ]]
+if [[ ! -d "${target_dir}" ]]
 then
-  print -- "Target directory '${targetDir}' does not exit"
+  printf "Target directory %s does not exist\n" "${(q+)target_dir}"
   exit 1
 else
-  for sourceFile in ${~sourcePattern}
+  # I normally avoid cd in scripts, but this is the cleanest way to get source relative to target,
+  # it matches the setup use case anyway, and so i probably won't find bugs in other usage. I might
+  # revisit this if i ever find a need for the more sophisticated behaviour.
+  cd "${target_dir}"
+  for source_file in ${~source_pattern}(N)
   do
     # It's tempting to try to flatten the link a bit, but i've previously reused this logic for links
     # into homebrew things where you cannot fully flatten because this will freeze in installed versions
-    targetFile="${targetPrefix}${sourceFile:t}"
-    if [[ -h "${targetFile}" ]]
+    target_file="${target_prefix}${source_file:t}"
+    if [[ -h "${target_file}" ]]
     then
-      current="$(zstat +link "${targetFile}")"
-      if [[ ! "${sourceFile}" == "${current}" ]]
+      current="$(zstat +link "${target_file}")"
+      if [[ ! "${source_file}" == "${current}" ]]
       then
-        print -- "${targetFile} -> ${current} != ${sourceFile}"
+        printf "%s -> %s != %s\n" "${(q+)target_file}" "${(q+)current}" "${(q+)source_file}"
         # else it already points to the right place
       fi
-    elif [[ -e "${targetFile}" ]]
+    elif [[ -e "${target_file}" ]]
     then
-      print -r -- "${targetFile} is not a link"
+      printf "%s is not a link\n" "${(q+)target_file}"
     else
       # it doesn't exist, set it up
-      needSudo "${targetDir}" && { SUDO=sudo }
-      ${SUDO-} ln -s "${sourceFile}" "${targetFile}"
-      print -r -- "${targetFile} -> ${sourceFile}"
+      need_sudo "${target_dir}" && { SUDO=sudo ; }
+      ${SUDO-} ln -s "${source_file}" "${target_file}"
+      printf "%s -> %s\n" "${(q+)target_file}" "${(q+)source_file}"
     fi
   done
 
-  for targetFile in "${targetPrefix}"*(N@)
+  for target_file in "${target_prefix}"*(N@)
   do
-    current="$(zstat +link "${targetFile}")"
+    current="$(zstat +link "${target_file}")"
     # Only remove links that match our source pattern, and test this first since it doesn't need to
     # check the filesystem
-    if [[ ( "${current}" == ${~sourcePattern} ) && ( ! -e ${current} ) ]]
+    if [[ ( "${current}" == ${~source_pattern} ) && ( ! -e ${current} ) ]]
     then
-      needSudo "${targetDir}" && { SUDO=sudo }
-      print -- "${targetFile} is dangling -> ${current}"
-      print -- "  :; rm ${targetFile}"
-      ${SUDO-} rm -i "${targetFile}"
+      need_sudo "${target_dir}" && { SUDO=sudo ; }
+      printf "%s is dangling -> %s\n" "${(q+)target_file}" "${(q+)current}"
+      printf ":; rm -- %s\n" "${(q+)target_file}"
+      ${SUDO-} rm -i -- "${target_file}"
     fi
   done
 fi
