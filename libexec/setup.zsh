@@ -14,6 +14,9 @@ set -e
 # to avoid requiring git for setup.zsh to function correctly
 ETC_DIR="${$(print -P '%x'):A:h:h}"
 
+# Keep bin in etc for less repo management overhead
+ln -fns ~/etc/bin ~/bin
+
 # Standard directories i want
 mkdir -p ~/src
 mkdir -p ~/tmp

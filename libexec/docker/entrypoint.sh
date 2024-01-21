@@ -10,6 +10,7 @@ set -e
 
 ln -fns /var/cache/apk /etc/apk/cache
 apk add git
+apk add ncurses
 apk add sqlite
 apk add sudo
 apk add uuidgen

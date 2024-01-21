@@ -1,0 +1,154 @@
+#!/bin/sh
+
+# ansi_name number
+# Print the ansi colour name for number
+ansi_name() {
+  # This is the slickest portable implementation of this i can find
+  number="${1:?}"
+  set 'black' 'red' 'green' 'yellow' 'blue' 'magenta' 'cyan' 'white'
+  shift ${number}
+  printf '%s' "$1"
+}
+
+# with_fg fg_color ...
+# Print ... with foreground color fg_color
+with_fg() {
+  fg_color="${1:?}"
+  shift
+  printf '%s%s%s' "$(tput setaf "${fg_color}")" "$*" "$(tput sgr0)"
+}
+
+# with_bg bg_color ...
+# Print ... with background color bg_color
+with_bg() {
+  bg_color="${1:?}"
+  shift
+  printf '%s%s%s' "$(tput setab "${bg_color}")" "$*" "$(tput sgr0)"
+}
+
+# with_fg_bg fg_color bg_color ...
+# Print ... with foreground colour fg_color and background color bg_color
+with_fg_bg() {
+  fg_color="${1:?}"
+  bg_color="${2:?}"
+  shift 2
+  printf '%s%s%s%s' "$(tput setaf "${fg_color}")" "$(tput setab "${bg_color}")" "$*" "$(tput sgr0)"
+}
+
+# See https://en.wikipedia.org/wiki/ANSI_escape_code under colors, 3-bit and 4-bit
+printf 'Ansi Colors\n'
+spaces="$(printf '%4s' '')"
+for color in $(seq 0 7)
+do
+  printf '%8s %02d' "$(ansi_name "${color}")" "${color}"
+  printf ' %s' "$(with_bg "${color}" "${spaces}")"
+  bright_color=$((color + 8))
+  printf '%8s %02d' 'bright' "${bright_color}"
+  printf ' %s' "$(with_bg "${bright_color}" "${spaces}")"
+  printf '\n'
+done
+printf '\n'
+
+# See https://en.wikipedia.org/wiki/ANSI_escape_code under colors, 8-bit
+printf 'Color Cube\n'
+printf '%4s' ''
+for b in $(seq 0 5)
+do
+  printf '%2d' "$b"
+done
+for g in $(seq 1 5)
+do
+  printf '%4d%10s' "$((6*g))" ''
+done
+printf '\n'
+for r in $(seq 0 5)
+do
+  printf '%3d ' "$((16 + 6*6*r))"
+  for g in $(seq 0 5)
+  do
+    for b in $(seq 0 5)
+    do
+      color="$((16 + 6*6*r + 6*g + b))"
+      printf '%s' "$(with_bg "${color}" '  ')"
+    done
+    printf '  '
+  done
+  printf '\n'
+done
+printf '\n'
+
+printf 'Greys\n'
+for grey in $(seq 0 23)
+do
+  color=$((232+grey))
+  printf '%s' "$(with_bg "${color}" '    ')"
+done
+printf '\n'
+for grey in $(seq 0 23)
+do
+  color=$((232+$grey))
+  printf '%4d' "${color}"
+done
+printf '\n\n'
+
+printf 'Ansi Contrast\n'
+printf '%10s' ''
+for bg_color in $(seq 0 7)
+do
+  printf ' %-7s %02d' "$(ansi_name "${bg_color}")" "${bg_color}"
+done
+printf '\n'
+sample='  Sample  '
+for fg_color in $(seq 0 7)
+do
+  printf '%7s %02d' $(ansi_name $fg_color) $fg_color
+  for bg_color in $(seq 0 7)
+  do
+    printf ' %s' "$(with_fg_bg "${fg_color}" "${bg_color}" "${sample}")"
+  done
+  printf '\n'
+  bright_fg_color=$((8+fg_color))
+  printf ' bright %02d' "${bright_fg_color}"
+  for bg_color in $(seq 0 7)
+  do
+    printf ' %s' "$(with_fg_bg "${bright_fg_color}" "${bg_color}" "${sample}")"
+  done
+  printf '\n'
+done
+printf '\n'
+
+printf 'Ansi vs Default\n'
+printf '%10s' ''
+for fg_color in $(seq 0 7)
+do
+  printf ' %-7s %02d' "$(ansi_name "${fg_color}")" "${fg_color}"
+done
+printf '\n'
+
+printf '%10s' 'foreground'
+for fg_color in $(seq 0 7)
+do
+  printf ' %s' "$(with_fg "${fg_color}" "${sample}")"
+done
+printf '\n'
+printf '%10s' 'bright'
+for fg_color in $(seq 0 7)
+do
+  bright_fg_color=$((8+fg_color))
+  printf ' %s' "$(with_fg "${bright_fg_color}" "${sample}")"
+done
+printf '\n'
+
+printf '%10s' 'background'
+for bg_color in $(seq 0 7)
+do
+  printf ' %s' "$(with_bg "${bg_color}" "${sample}")"
+done
+printf '\n'
+printf '%10s' 'bright'
+for bg_color in $(seq 0 7)
+do
+  bright_bg_color=$((8+bg_color))
+  printf ' %s' "$(with_bg "${bright_bg_color}" "${sample}")"
+done
+printf '\n'
