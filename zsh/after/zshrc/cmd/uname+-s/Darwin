@@ -1,0 +1,8 @@
+#!/bin/false
+# This script is intended to be sourced
+
+# Environment variables only needed interactively
+
+# Tell ls to use color when output is a tty
+# Using this on MacOS only, it doesn't work in docker alpine at least
+export CLICOLOR=yes
