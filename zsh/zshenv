@@ -9,6 +9,8 @@ ETC_ZSH_DIR="${ZSHENV:h}"
 ## General environment setup
 
 export RIPGREP_CONFIG_PATH="${HOME}/.rgrc"
+# When i use python virtual env, I don't it messing with my prompt
+export VIRTUAL_ENV_DISABLE_PROMPT='yes'
 
 ## Shell history in a sqlite database
 # This must be set up in zshenv - although most usage is interactive, the etc/libexec/setup
