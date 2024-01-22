@@ -24,23 +24,48 @@ path=(
   {/usr{/local,},}/{sbin,bin}
 )
 
-## Platform specific additional configuration
-# This has obvious echoes to the env version in zshrc, but i'm not unifying them at this stage,
-# becuase i'm not sure enough of what needs to be common yet.
-() {
-  # Files in the after/zshenv/cmd directory are encoded commands, run the command and source the
-  # appropriate output specific file if it exists
-  local after_cmds="${ZSHENV:h}/after/${ZSHENV:t}/cmd"
+## Environment/Command specific additional configuration
+# File conventionally named after files near a given config file, and source additional configuration
+# based on environment variable values or command output.
+# This function is used by other configuration files, so make it global with appropriate prefix
+halfyak_etc_after() {
+  local file="${1:?}"
+  shift
+  local after_dir="${file:h}/after/${file:t}"
+
+  # Files in the .../after/.../env directory are environment variables names, evaluate the
+  # environment variable and source the appropriate value specific file if it exists
+  local after_envs="${after_dir}/env"
+  local after_env
+  for after_env in "${after_envs}"/*(N)
+  do
+    local after_env_variable="${after_env:t}"
+    [[ -v "${after_env_variable}" ]] && {
+      # The variable name (taken from the directory name in the .../after/.../env) is set,
+      # so use (P) to expand it to find the file with the value specific code ...
+      local after_env_file="${after_env}/${(P)after_env_variable}"
+      # ... and source it if present
+      [[ -r "${after_env_file}" ]] && source "${after_env_file}"
+    } # else ignore since the variable is not set
+  done
+
+  # Files in the .../after/.../cmd directory are encoded commands, run the command and source
+  # the appropriate output specific file if it exists
+  local after_cmds="${after_dir}/cmd"
   local after_cmd
   for after_cmd in "${after_cmds}"/*(N)
   do
     # Split on + as a simple way to encode command line options in the file name
     # In the event we need a sniffer which has a + in its actual name, we can add a wrapper
     local after_cmd_command=(${(s:+:)after_cmd:t})
+    # Evaluate the command to find the value specific code ...
     local after_cmd_value
     after_cmd_value="$("${(@)after_cmd_command}")" && {
+      # ... and source it if present
       local after_cmd_file="${after_cmd}/${after_cmd_value}"
       [[ -r "${after_cmd_file}" ]] && source "${after_cmd_file}"
     } # else ignore since the command failed
   done
 }
+
+halfyak_etc_after "${ZSHENV}"

@@ -62,25 +62,9 @@ halfyak_etc_zshaddhistory_sqlite_history_save() {
 }
 zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqlite_history_save)
 
-## Environment specific additional configuration
-# This has obvious echoes to the platform version in zshenv, but i'm not unifying them at this stage,
-# becuase i'm not sure enough of what needs to be common yet.
-() {
-  # For environment variables in the after/zshrc/env directory, source the appropriate value specific file
-  local after_envs="${ZSHRC:h}/after/${ZSHRC:t}/env"
-  local after_env
-  for after_env in "${after_envs}"/*(N)
-  do
-    local after_env_variable="${after_env:t}"
-    [[ -v "${after_env_variable}" ]] && {
-      # the variable name (taken from the directory name in the after/zshrc/env) is set,
-      # so use (P) to expand it to find the file with the variable specific code,
-      # and source it if present
-      local after_env_file="${after_env}/${(P)after_env_variable}"
-      [[ -r "${after_env_file}" ]] && source "${after_env_file}"
-    } # else ignore since the variable is not set
-  done
-}
+## Environment/Command specific additional configuration
+# half_etc_after is defined in zshenv
+halfyak_etc_after "${ZSHRC}"
 
 ## Autocompletion configuration
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
