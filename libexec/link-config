@@ -6,7 +6,7 @@
 # directory, not the current working directory, as per typical ln -s behaviour.
 
 # Invoke as
-#   link-config.zsh target_prefix source_pattern
+#   link-config target_prefix source_pattern
 # target_prefix includes any required per file prefix in the target
 #   location, and must end in / if no per prefix is required.
 # source_pattern is a glob for zsh ${~source_pattern}

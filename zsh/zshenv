@@ -6,12 +6,12 @@ ZSHENV="${$(print -P '%x'):A}"
 ETC_ZSH_DIR="${ZSHENV:h}"
 
 ## Shell history in a sqlite database
-# This must be set up in zshenv - although most usage is interactive, the etc/libexec/setup.zsh
-# script is run non-interactively when doing exploratory testing via etc/libexec/dockerized-etc.zsh
+# This must be set up in zshenv - although most usage is interactive, the etc/libexec/setup
+# script is run non-interactively when doing exploratory testing via etc/libexec/dockerized-etc
 # Location of db
 export HALFYAK_ETC_SQLITE_HISTORY_DB="${HOME}/.local/share/halfyak/etc/zsh/history.sqlite3"
 # Main driver script
-export HALFYAK_ETC_SQLITE_HISTORY="${ETC_ZSH_DIR}/libexec/sqlite-history.zsh"
+export HALFYAK_ETC_SQLITE_HISTORY="${ETC_ZSH_DIR}/libexec/sqlite-history"
 
 ## PATH
 # Take complete control of PATH, i don't want any external injection here

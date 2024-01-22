@@ -42,7 +42,7 @@ do
 done
 
 ETC_DIR="${$(print -P '%x'):A:h:h}"
-HOST_ENTRYPOINT="${ETC_DIR}/libexec/docker/entrypoint.sh"
+HOST_ENTRYPOINT="${ETC_DIR}/libexec/docker/entrypoint"
 HOST_GIT_REPO="${ETC_DIR}/.git"
 
 CACHE_DIR="${XDG_CACHE_HOME:-${HOME}/.cache}/halfyak.org/etc"
@@ -50,7 +50,7 @@ HOST_APK_CACHE="${CACHE_DIR}/apk"
 
 mkdir -p "${HOST_APK_CACHE}" "${HOST_ENTRYPOINT%/*}"
 
-DOCKER_ENTRYPOINT="/mnt/entrypoint.sh"
+DOCKER_ENTRYPOINT="/mnt/entrypoint"
 DOCKER_GIT_REPO="/mnt/etc.git"
 
 DOCKER_APK_CACHE="/var/cache/apk"

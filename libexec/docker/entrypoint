@@ -29,10 +29,10 @@ else
   cd
 fi
 
-# Clone and setup as the user (default root), assumes HALFYAK_ETC_GIT set by dockerized-etc.zsh
+# Clone and setup as the user (default root), assumes HALFYAK_ETC_GIT set by dockerized-etc
 su "${HALFYAK_USERNAME:-root}"<<END_SETUP
 git clone "${HALFYAK_ETC_GIT}"
-~/etc/libexec/setup.zsh
+~/etc/libexec/setup
 END_SETUP
 
 # Start a configured shell as the user (default root)
