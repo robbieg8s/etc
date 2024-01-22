@@ -1,7 +1,9 @@
 #!/bin/false
 # This script is intended to be sourced
-#
-# use 1Password as an ssh-agent - see https://developer.1password.com/docs/ssh/agent/compatibility/#ssh-auth-sock
+
+# Use HomeBrew vim as editor in general
+export EDITOR=/opt/homebrew/bin/vim
+# Use 1Password as an ssh-agent - see https://developer.1password.com/docs/ssh/agent/compatibility/#ssh-auth-sock
 export SSH_AUTH_SOCK="${HOME}/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
 
 # Put MacOS specific PATH entries just after the MacOS (aka Darwin) specific scripts in my bin
