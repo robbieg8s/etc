@@ -1,9 +1,14 @@
 ## Establish file system context
+
 # These intentionally are not exported - they're just for this script to find things
 # Prompt expand %x to get current file, absolutize
 ZSHENV="${$(print -P '%x'):A}"
 # We want the directory often enough also
 ETC_ZSH_DIR="${ZSHENV:h}"
+
+## General environment setup
+
+export RIPGREP_CONFIG_PATH="${HOME}/.rgrc"
 
 ## Shell history in a sqlite database
 # This must be set up in zshenv - although most usage is interactive, the etc/libexec/setup
