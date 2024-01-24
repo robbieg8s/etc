@@ -2,90 +2,9 @@
 
 set -e
 
-# General test infra, probably extractable
-
 this_script="${$(print -P '%x'):A}"
-test_base="${this_script%/test/*}"
-test_offset="${this_script##*/test/}"
-script_under_test="${test_base}/${test_offset:h}/${${test_offset:t}#test-}"
+source "${this_script:h:h}/common" "${this_script}"
 
-colored() {
-  local color="${1:?}"
-  shift
-  print -P "%F{${color}}$@%f"
-}
-
-green() {
-  colored green "$@"
-}
-
-red() {
-  colored red "$@"
-}
-
-failed() {
-  local test_name="${1:?}"
-  local test_location="${2:?}"
-  printf '%s: Test %s at %s\n' "$(red "TEST FAILED")" "$(green "${test_name}")" "${test_location}"
-  shift 2
-  printf '%s\n' "$@"
-  printf 'Stdout:\n'
-  cat "${output_dir}"/"${test_name}.out"
-  printf 'Stderr:\n'
-  cat "${output_dir}"/"${test_name}.err"
-  exit 2
-}
-
-
-test_dir=$(mktemp -d)
-output_dir="${test_dir}"/output
-mkdir -p "${output_dir}"
-
-cleanup() {
-  case "$?" in
-    0) green "PASSED" ;;
-    *) red "FAILED" ;;
-  esac
-  rm -rf "${test_dir}"
-}
-
-trap 'cleanup ; trap - ERR EXIT' ERR EXIT
-trap 'cleanup ; trap - INT ; kill -INT $$' INT
-
-run_test_unchecked() {
-  local test_name="${1:?}"
-  shift
-  # Clean up previous tests, so that accidental use of the wrong output is caught earlier
-  rm -f "${output_dir}"/*.{out,err}(N)
-  local stdout="${output_dir}/${test_name}.out"
-  local stderr="${output_dir}/${test_name}.err"
-  "${script_under_test}" "$@" 1>"${stdout}" 2>"${stderr}"
-  return "$?"
-  # Caller checks exit code, if they forget, set -e above will keep them honest
-}
-
-run_test() {
-  local test_name="${1:?}"
-  local test_location="${2:?}"
-  shift 2
-  run_test_unchecked "${test_name}" "$@" || {
-    exit_code="$?"
-    failed "${test_name}" "${test_location}" "Exit code ${exit_code} from ${script_under_test}"
-  }
-}
-
-verify_stdout() {
-  local test_name="${1:?}"
-  local test_location="${2:?}"
-  local expected_stdout="${3:?}"
-  local actual_stdout="${output_dir}/${test_name}.out"
-  # Check stdout
-  diff "${expected_stdout}" "${actual_stdout}" || \
-    failed "${test_name}" "${test_location}" "Actual output (>) differs from expected (<), diff above"
-  # Don't verify stderr, assume that it's informational if exit code and output are ok
-}
-
-# From here down, it's likely specific to this test
 # In general, the tests assume that the sort order of * is stable
 
 verify_links() {
