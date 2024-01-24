@@ -1,0 +1,71 @@
+#!/bin/zsh -f
+
+set -e
+
+# Create a loadable index of subdirectories for accessing via ~...
+# Since most systems I use are single user, the value of ~user is neglible,
+# so this gives me a way to conveniently use ~ for any other set of related directories.
+
+error() {
+  printf '%s\n' "${@}" 1>&2
+  exit 1
+}
+
+[[ $# -eq 2 ]] || error "Usage: $0 index-file directory"
+
+index_file="${1:?}"
+directory="${2:?}"
+
+# If the index_file exists and it's not a regular file, give up, because the way
+# we replace with an mv below won't work, and it probably means something is wrong.
+[[ -e "${index_file}" ]] && [[ ! -f "${index_file}" ]] && {
+  error "The index-file '${index_file}' exists but is not a regular file"
+}
+
+# Inverted condition so that a missing index_file results in the else branch
+if [[ "${index_file}" -nt "${directory}" ]]
+then
+  printf '%s: Already up to date, index %s for %s\n' "$(date)" "${index_file}" "${directory}"
+else
+  # If this looks barquote, it's because touch is a bit nontrivial, and i want atomic updates
+  # of the file to facilitate sourcing it concurrently. Back when i wrote this, touch -r used stat,
+  # which uses a timespec, with its nanosecond precision, to read the timestamp of the reference file,
+  # but utimes, which uses a timeval, with its microsecond precision, to write the timestamp to the new file,
+  # converting via TIMESPEC_TO_TIMEVAL which necessarily loses precision.
+  # This precision loss means the time is rounded down, making the touch'd file a tiny bit older than the reference
+  # file, which is the unsafe direction if you want to make a copyable timestamp after now.
+  #
+  # This has since been fixed, but i've not updated this script.
+  #
+  # Historical source for the curious:
+  # https://github.com/freebsd/freebsd-src/blob/b268ae6440f83131d3880a7d1a89699f8132ab36/usr.bin/touch/touch.c#L412
+
+  # So, we create a file whose timestamp is now, and spin if needed until copying it's timestamp
+  # results in a file newer than the directory. This means we can re-establish a time which is after
+  # the current contents, but before any changes we might miss while processing to create the index.
+
+  mkdir -p "${index_file:h}"
+  index_file_timestamp="${index_file}.timestamp-$$"
+  index_file_updated="${index_file}.updated-$$"
+  until [[ "${index_file_updated}" -nt "${directory}" ]]
+  do
+    touch "${index_file_timestamp}"
+    touch -m -r "${index_file_timestamp}" "${index_file_updated}"
+  done
+
+  # Ok, now that we can reliably make a timestamp after directory looks now, do the work. If anything
+  # changes, directory will get a modification time after now, and we will update next pass.
+
+  for subdir in "${directory}"/*(/N)
+  do
+    envvar="${subdir:t:gs/-/_}"
+    # If it looks safe, emit a command to set it in the named dir hash
+    [[ "${envvar}" =~ ^[a-zA-Z0-9_]*$ ]] && { printf 'hash -d "%s"="%s"\n' "${envvar}" "${subdir:A}" ; }
+  done > "${index_file_updated}"
+  # Restore the "before directory change" timestamp to our updated file.
+  touch -m -r "${index_file_timestamp}" "${index_file_updated}"
+  rm "${index_file_timestamp}"
+  mv "${index_file_updated}" "${index_file}"
+  zcompile -R "${index_file}"
+  printf '%s: Updated index %s for %s\n' "$(date)" "${index_file}" "${directory}"
+fi

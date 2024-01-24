@@ -1,0 +1,23 @@
+#!/bin/zsh -f
+
+set -e
+
+this_script="${$(print -P '%x'):A}"
+source "${this_script:h:h}/common" "${this_script}"
+
+## Basic happy path
+
+basic_fixture="${test_dir}/basic/fixture"
+mkdir -p "${basic_fixture}"
+mkdir "${basic_fixture}/"{sail,salt,say-sweet,sunset}
+
+run_test basic "$(print -P '%x:%I')" "${test_dir}/basic/result" "${basic_fixture}"
+diff =(cat<<END_EXPECTED_BASIC
+hash -d "sail"="${basic_fixture:A}/sail"
+hash -d "salt"="${basic_fixture:A}/salt"
+hash -d "say_sweet"="${basic_fixture:A}/say-sweet"
+hash -d "sunset"="${basic_fixture:A}/sunset"
+END_EXPECTED_BASIC
+) "${test_dir}/basic/result" || {
+  failed basic "$(print -P '%x:%I')" "Outcome (>) differs from expected (<), diff above"
+}
