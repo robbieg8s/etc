@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>org.halfyak.etc.launchAgent.update-hashd-src</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>${HALFYAK_ETC}/libexec/create-hashd-index</string>
+      <!-- Technically this should respect XDG_CACHE_HOME, but environment-expand isn't smart enough yet -->
+      <string>${HOME}/.cache/halfyak.org/etc/sourceables.hashd-src</string>
+      <string>${HOME}/src</string>
+    </array>
+    <key>ThrottleInterval</key>
+    <integer>3600</integer>
+    <key>WatchPaths</key>
+    <array>
+      <string>${HOME}/src</string>
+    </array>
+    <key>StandardOutPath</key>
+    <string>${HOME}/var/log/update-hashd-src.out</string>
+    <key>StandardErrorPath</key>
+    <string>${HOME}/var/log/update-hashd-src.err</string>
+  </dict>
+</plist>

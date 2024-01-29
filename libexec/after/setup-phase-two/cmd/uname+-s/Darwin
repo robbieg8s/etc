@@ -1,0 +1,28 @@
+#!/bin/false
+# This script is intended to be sourced
+
+# Install custom LaunchAgents, expanding environment variables as we do.
+# We do the expansion since launchd.plist(5) provides no mechanism for variability here, and i don't
+# want to hardcode my username. An alternative would be to put symlinks in a stable place, for
+# example /opt/halfyak, but that is intrinsically not multiuser, and would to be done for multiple
+# links over time, such as when using WatchPaths.
+
+# We do this in two stages - expanding to intermediate storage, and then linking from where macOS
+# looks for them to that. This makes it easy to lean on link-config to remove old ones without
+# interfering with files from other applications. We use XDG_CACHE_HOME for intermediate storage -
+# this isn't really a cache, but it feels like a reasonable enough place.
+
+() {
+  local launchd_plists_expanded="${XDG_CACHE_HOME:-${HOME}/.cache}/halfyak.org/etc/LaunchAgents"
+  # Remove and readd them all so that link-config can manage removal in the macOS location
+  rm -rf "${launchd_plists_expanded}"
+  mkdir -p "${launchd_plists_expanded}"
+  # Permit LaunchAgents to expand the HALFYAK_ETC root
+  export HALFYAK_ETC
+  for launchd_plist in "${HALFYAK_ETC}"/LaunchAgents/*.plist
+  do
+    "${HALFYAK_ETC}"/bin/environment-expand "${launchd_plist}" > "${launchd_plists_expanded}/${launchd_plist:t}"
+  done
+  # For now, just update the LaunchAgents, and invoke launchctl manually
+  noglob "${HALFYAK_ETC}"/libexec/link-config ~/Library/LaunchAgents/ "${launchd_plists_expanded}"/*.plist
+}

@@ -4,3 +4,9 @@ set -e
 
 # Intialize shell history sqlite database - variables set in zshenv
 "${HALFYAK_ETC_SQLITE_HISTORY:?}" "${HALFYAK_ETC_SQLITE_HISTORY_DB:?}" init
+
+# :h:h removes libexec/setup-phase-two to return the etc root
+# Passing it through is more robust than after scripts relying on
+# the details of the after mechanism.
+HALFYAK_ETC="${$(print -P '%x'):A:h:h}"
+halfyak_etc_after "${ZSH_ARGZERO}"

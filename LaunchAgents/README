@@ -1,0 +1,22 @@
+# This is a super short launchctl cheat sheet, for more
+:; man launchctl
+
+# To include a new launch agent without loging in again
+:; launchctl load ~/Library/LaunchAgents/org.halfyak.launchAgent.thing.plist
+
+# If it's already present, you need to unload first using
+:; launchctl unload ~/Library/LaunchAgents/org.halfyak.launchAgent.thing.plist
+
+# If you edit the plist, you need to unload and load to update it (or log in again)
+#
+# To run one now without waiting
+:; launchctl kickstart gui/$(id -u)/org.halfyak.launchAgent.thing
+
+# To inspect one
+:; launchctl print gui/$(id -u)/org.halfyak.launchAgent.thing
+
+# To see recent (last 2 hours) log messages from launchd related to my launch agents
+:; log show --style compact --last 2h --predicate "(processImagePath == '/sbin/launchd') AND (subsystem CONTAINS 'halfyak')"
+
+# To inspect all (look at services key)
+:; launchctl print gui/$(id -u)
