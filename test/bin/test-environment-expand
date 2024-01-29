@@ -1,0 +1,119 @@
+#!/bin/zsh
+
+set -e
+
+this_script="${$(print -P '%x'):A}"
+source "${this_script:h:h}/common" "${this_script}"
+
+env_wrapper() {
+  env -i \
+    FIRST_VARIABLE='first value' \
+    SECOND_VARIABLE='second value' \
+    EMPTY_VARIABLE='' \
+    mixedCaseVariable='mixed case value' \
+    lowercasevariable='lower case value' \
+    "$@"
+}
+
+## Expand a single variable
+
+run_test_wrapped single "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before ${FIRST_VARIABLE} After
+END_INPUT_SINGLE
+verify_stdout single "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before first value After
+END_EXPECTED_SINGLE
+)
+
+## Expand an empty variable
+
+run_test_wrapped empty "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before ${EMPTY_VARIABLE} After
+END_INPUT_SINGLE
+verify_stdout empty "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before  After
+END_EXPECTED_SINGLE
+)
+
+## Don't expand a non existent variable
+# This is different to shell and envsubst, but i think its more likely to debuggable
+
+run_test_wrapped nosuch "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before ${NO_SUCH_VARIABLE} After
+END_INPUT_SINGLE
+verify_stdout nosuch "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before ${NO_SUCH_VARIABLE} After
+END_EXPECTED_SINGLE
+)
+
+## Don't expand an unbraced variable
+# This is different to shell and envsubst, but it makes the script simpler
+
+run_test_wrapped unbraced "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before $FIRST_VARIABLE After
+END_INPUT_SINGLE
+verify_stdout unbraced "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before $FIRST_VARIABLE After
+END_EXPECTED_SINGLE
+)
+
+
+## Expand at start of line
+
+run_test_wrapped startofline "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+${FIRST_VARIABLE} After
+END_INPUT_SINGLE
+verify_stdout startofline "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+first value After
+END_EXPECTED_SINGLE
+)
+
+## Expand at end of line
+
+run_test_wrapped endofline "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before ${FIRST_VARIABLE}
+END_INPUT_SINGLE
+verify_stdout endofline "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before first value
+END_EXPECTED_SINGLE
+)
+
+## Expand alone on line
+
+run_test_wrapped alone "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+${FIRST_VARIABLE}
+END_INPUT_SINGLE
+verify_stdout alone "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+first value
+END_EXPECTED_SINGLE
+)
+
+## Expand multiple variables on one line
+
+run_test_wrapped multiplevariables "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before ${FIRST_VARIABLE} Middle ${SECOND_VARIABLE} After
+END_INPUT_SINGLE
+verify_stdout multiplevariables "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before first value Middle second value After
+END_EXPECTED_SINGLE
+)
+
+## Expand multiple lines, including some other variable name styles and usages
+
+run_test_wrapped multiplelines "$(print -P '%x:%I')" env_wrapper << 'END_INPUT_SINGLE'
+Before ${FIRST_VARIABLE} Middle ${SECOND_VARIABLE} After
+${SECOND_VARIABLE}${FIRST_VARIABLE}
+${FIRST_VARIABLE}_VARIABLE_${SECOND_VARIABLE}
+No variables in line
+${mixedCaseVariable}
+${lowercasevariable}
+END_INPUT_SINGLE
+verify_stdout multiplelines "$(print -P '%x:%I')" =(cat<<'END_EXPECTED_SINGLE'
+Before first value Middle second value After
+second valuefirst value
+first value_VARIABLE_second value
+No variables in line
+mixed case value
+lower case value
+END_EXPECTED_SINGLE
+)

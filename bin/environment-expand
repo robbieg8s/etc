@@ -1,0 +1,21 @@
+#!/usr/bin/awk -f
+
+# Expand expressions like ${VARIABLE_NAME} to the value of the environment variable VARIABLE_NAME
+
+# Don't bother with a pattern, since we match in the body anyway, and a line with no expansions
+# just falls through with only one failed match, which all that putting a pattern here would do.
+{
+    line = $0
+    # The {,} do need to be escaped (on alpine at least), although on macOS it is not required.
+    while (match(line, /\$\{[a-zA-Z_]*\}/)) {
+        variable = substr(line, RSTART+2, RLENGTH-3)
+        if (variable in ENVIRON) {
+            value = ENVIRON[variable]
+            printf("%s%s", substr(line, 1, RSTART - 1), value)
+        } else {
+            printf("%s", substr(line, 1, RSTART + RLENGTH - 1))
+        }
+        line = substr(line, RSTART+RLENGTH)
+    }
+    printf("%s\n", line)
+}
