@@ -1,0 +1,25 @@
+#!/bin/zsh
+
+# Run all the tests
+
+set -e
+
+test_root="${$(print -P '%x'):A:h}"
+
+test_count=0
+failure_count=0
+find "${test_root}" -type f -name 'test-*' -print | while read test_file
+do
+  : $(( test_count++ ))
+  printf '%s: ' "${test_file#${test_root:h}/}"
+  # Run script and count failures
+  "${test_file}" || : $(( failure_count++ ))
+done
+
+if [[ failure_count -eq 0 ]]
+then
+    print -P "${test_count} tests %F{green}PASSED%f"
+else
+    print -P "${failure_count}/${test_count} tests %F{red}FAILED%f"
+    exit 1
+fi
