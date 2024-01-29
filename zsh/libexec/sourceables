@@ -1,0 +1,67 @@
+#!/bin/false
+# This script is intended to be sourced
+
+# A precmd to automatically source updated files into the shell
+
+# This pollutes the global module and name space a little, but they're standard modules and
+# it's a little complex to work around this since we want to maintain state in the shell.
+zmodload -F zsh/datetime b:strftime
+zmodload -F zsh/stat b:zstat
+
+# Session state, an associative array of filename -> timestamp it was last sourced at
+typeset -g -A HALFYAK_ETC_SOURCEABLE_TIMESTAMPS
+
+halfyak_etc_sourceables_show() {
+  # Use (ko) to sort and then relookup the map to fetch last_loaded - the array won't
+  # be large, and as a display command it's not performance critical.
+  local file
+  for file in "${(ko)HALFYAK_ETC_SOURCEABLE_TIMESTAMPS[@]}"
+  do
+    local last_loaded="${HALFYAK_ETC_SOURCEABLE_TIMESTAMPS[${file}]}"
+    printf '%s %s\n' "$(strftime '%c %Z' "${last_loaded}")" "${file##*/}"
+  done
+}
+
+halfyak_etc_precmd_sourceables_reload() {
+  local sourceables="${XDG_CACHE_HOME:-${HOME}/.cache}/halfyak.org/etc/sourceables"
+
+  if [[ -d "${sourceables}" ]]
+  then
+    # Get a list of files to check, ignoring zcompile'd things,
+    # which are automatically read by zsh when we source file files below.
+    local files=("${sourceables}"/^*.zwc(N))
+    if [[ 0 -ne "${#files}" ]]
+    then
+      local now="$(print -P '%D{%s}')"
+      local updated
+      # Query the modification times for files
+      zstat -nA updated +mtime "${files[@]}"
+      local file
+      for file last_updated in "${updated[@]}"
+      do
+        local last_loaded="${HALFYAK_ETC_SOURCEABLE_TIMESTAMPS[$file]:-0}"
+        # We use -ge (not -gt) to err on the side of reload, and since we set
+        # the timestamp to now (not the file timestamp), this is self healing
+        if [[ "${last_updated}" -ge "${last_loaded}" ]]
+        then
+          # Out of date, reload and update last load time
+          source "${file}"
+          HALFYAK_ETC_SOURCEABLE_TIMESTAMPS[${file}]="${now}"
+        fi
+      done
+    fi
+    if [[ "${#files}" -ne "${#HALFYAK_ETC_SOURCEABLE_TIMESTAMPS}" ]]
+    then
+    # Some files have been removed, so drop them from the hash
+    # Step through the keys in the state, removing those not found in files
+    for key in "${(k)HALFYAK_ETC_SOURCEABLE_TIMESTAMPS[@]}"
+    do
+      # (ie) is index of exact match, it's one past the end if not present
+      if [[ "${files[(ie)${key}]}" -gt "${#files}" ]]
+      then
+        unset "HALFYAK_ETC_SOURCEABLE_TIMESTAMPS[${key}]"
+      fi
+    done
+    fi
+  fi
+}

@@ -62,6 +62,15 @@ halfyak_etc_zshaddhistory_sqlite_history_save() {
 }
 zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqlite_history_save)
 
+## Auto sourcing infrastructure
+() {
+  local sourceables="${ETC_ZSH_DIR}"/libexec/sourceables
+  [[ -r "${sourceables}" ]] && {
+    source "${sourceables}"
+    precmd_functions=($precmd_functions halfyak_etc_precmd_sourceables_reload)
+  }
+}
+
 ## Environment/Command specific additional configuration
 # half_etc_after is defined in zshenv
 halfyak_etc_after "${ZSHRC}"
