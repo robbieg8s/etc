@@ -13,8 +13,9 @@ export RIPGREP_CONFIG_PATH="${HOME}/.rgrc"
 export VIRTUAL_ENV_DISABLE_PROMPT='yes'
 
 ## Shell history in a sqlite database
-# This must be set up in zshenv - although most usage is interactive, the etc/libexec/setup
-# script is run non-interactively when doing exploratory testing via etc/libexec/dockerized-etc
+# This must be set up in zshenv - although most usage is interactive, backups need to know the database
+# location, and the etc/libexec/setup script is run non-interactively when doing exploratory testing
+# via etc/libexec/dockerized-etc
 # Location of db
 export HALFYAK_ETC_SQLITE_HISTORY_DB="${HOME}/.local/share/halfyak/etc/zsh/history.sqlite3"
 # Main driver script

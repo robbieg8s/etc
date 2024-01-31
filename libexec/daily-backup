@@ -1,0 +1,29 @@
+#!/bin/zsh
+
+set -e
+
+log() {
+  printf '%s: %s\n' "$(date)" "$*"
+}
+
+error() {
+  log "$@"
+  exit 1
+}
+
+BACKUP_ROOT=~/cloud/backup
+if [[ ! -d "${BACKUP_ROOT}" ]]
+then
+  log "No backup root at '${BACKUP_ROOT}', cannot backup"
+else
+  BACKUP_DIR="${BACKUP_ROOT}/$(date +'%Y-%m-%d')"
+  log "Backing up to '${BACKUP_DIR}'"
+  mkdir "${BACKUP_DIR}" || error "Partial backup at '${BACKUP_DIR}', giving up"
+
+  sqlite3 "${HALFYAK_ETC_SQLITE_HISTORY_DB}" '.dump' \
+    | bzip2 --stdout \
+    > "${BACKUP_DIR}/HALFYAK_ETC_SQLITE_HISTORY_DB.dump.bz2"
+  [[ 0 -eq "${#pipestatus:#0}" ]]
+
+  log "$(du -sh "${BACKUP_DIR}")"
+fi

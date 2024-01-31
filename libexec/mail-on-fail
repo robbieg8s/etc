@@ -1,0 +1,17 @@
+#!/bin/zsh -f
+
+"$@" || {
+  exitCode="$?"
+  # Use sendmail, not mail, because mail backgrounds the call to sendmail,
+  # and launchd terminates the process group when the starting process returns.
+  # This can be mitigated
+  # - in the launchd.plist via AbandonProcessGroup, but that needs every plist to change
+  # - here using setsid, but it's a keg only cask so stably finding the right path is pain
+  # If i start sending a lot of mail from subtasks i can revisit (maybe with a synchronous wrapper)
+  sendmail -i "${USER}"<<END_MAIL
+Subject: Failed (${exitCode}) to run ${1##*/}
+
+$@
+END_MAIL
+  exit "${exitCode}"
+}
