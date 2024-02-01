@@ -56,12 +56,16 @@
     fi
     # We want to update with empty strings here if we are not in a git repository
 
-    # This is an xterm one which iTerm respects. I feel like there should be a terminfo
-    # sequence for this, but i have not been able to find it documented.
-    # See https://www.xfree86.org/current/ctlseqs.html under Operating System Controls, Set Text Parameters
-    print -n "\e]2;${window_title}\a"
     # See https://iterm2.com/documentation-escape-codes.html under SetUserVar
     print -n "\e]1337;SetUserVar=badge=${badge}\a"
+    # These are xterm sequences which iTerm respects. I feel like there should be a terminfo
+    # sequence for these, but i have not been able to find it documented. These could be broader,
+    # but it's convenient to do here and works for my use cases.
+    # See https://www.xfree86.org/current/ctlseqs.html under Operating System Controls, Set Text Parameters
+    # Set the tab title to the current named directory
+    print -nP "\e]1;%-1~\a"
+    # Set the window title to the git info (or empty) from above
+    print -n "\e]2;${window_title}\a"
   }
   precmd_functions=($precmd_functions halfyak_etc_precmd_iterm_badge_and_title)
 }
