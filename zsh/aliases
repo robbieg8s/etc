@@ -1,6 +1,18 @@
 # For now i'm putting functions for interactive shells only in this file also
 # These are mostly convenience wrappers
 
+# Convenience short cuts for recent-download
+
+# cat most recent download
+dlc() {
+  cat "$(recent-download "$@")"
+}
+
+# file name of most recent download
+dlf() {
+  recent-download "$@"
+}
+
 # Shell history in sqlite
 # These are for interactive use, and so fail if teh relevant variables aren't set
 

@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+if [ $# -ge 1 ]
+then
+  set -- grep --max-count=1 "$1"'$'
+else
+  set -- head -1
+fi
+
+filename="$(ls -t "${HOME}"/Downloads | "$@")"
+[[ -n "${filename}" ]] && printf '%s/Downloads/%s' "${HOME}" "${filename}"
