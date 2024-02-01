@@ -26,3 +26,42 @@
   }
   precmd_functions=($precmd_functions halfyak_etc_precmd_ftcs_command_finished)
 }
+
+() {
+  # Display the current git branch name in the iterm badge, and the repository name and
+  # branch in the window title. This is less clutter than in the prompt, and could in
+  # principle be made more async (although i'm not sure about the ergonomics of that).
+  # This
+  halfyak_etc_precmd_iterm_badge_and_title() {
+    local window_title=" "
+    local badge=""
+    local repository=""
+    local location=""
+    local gitroot="$(git rev-parse --show-toplevel 2>/dev/null)"
+    if [[ ! -z "${gitroot}" ]]
+    then
+      repository="${gitroot##*/}"
+      local symbolic="$(git symbolic-ref --quiet HEAD)"
+      if [[ -z "${symbolic}" ]]
+      then
+        location="detached "$(git describe --always --all --contains HEAD)
+      else
+        # We appear to be on a branch
+        location="${symbolic#refs/heads/}"
+      fi
+      window_title="(${repository})-[${location}]"
+      # The user variable we render into the iterm badge via the iterm settings
+      # Profiles/General/Basics/Badge is set to \(user.badge?)
+      badge="$(base64 <<< "${location}")"
+    fi
+    # We want to update with empty strings here if we are not in a git repository
+
+    # This is an xterm one which iTerm respects. I feel like there should be a terminfo
+    # sequence for this, but i have not been able to find it documented.
+    # See https://www.xfree86.org/current/ctlseqs.html under Operating System Controls, Set Text Parameters
+    print -n "\e]2;${window_title}\a"
+    # See https://iterm2.com/documentation-escape-codes.html under SetUserVar
+    print -n "\e]1337;SetUserVar=badge=${badge}\a"
+  }
+  precmd_functions=($precmd_functions halfyak_etc_precmd_iterm_badge_and_title)
+}
