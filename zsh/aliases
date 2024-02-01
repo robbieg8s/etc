@@ -1,3 +1,11 @@
+# Shell aliases
+
+# This is useful when i forget to reflexively quote find patterns
+alias find='noglob find'
+# These days most vi's are vim, but some installation use the name they were
+# invoked under to subset the features exposed, which i rarely want.
+alias vi=vim
+
 # For now i'm putting functions for interactive shells only in this file also
 # These are mostly convenience wrappers
 
