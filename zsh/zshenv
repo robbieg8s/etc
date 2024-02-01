@@ -74,6 +74,9 @@ halfyak_etc_after() {
       [[ -r "${after_cmd_file}" ]] && source "${after_cmd_file}"
     } # else ignore since the command failed
   done
+  # We don't want this command to exit non-zero, which it can do if the last after_cmd_file
+  # does not exist.
+  true
 }
 
 halfyak_etc_after "${ZSHENV}"
