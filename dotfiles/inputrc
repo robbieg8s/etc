@@ -1,0 +1,4 @@
+set editing-mode vi
+control-x: vi-movement-mode
+control-j: history-substring-search-forward
+control-k: history-substring-search-backward
