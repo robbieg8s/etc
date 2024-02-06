@@ -1,0 +1,8 @@
+map <C-X> <Esc>
+imap <C-X> <Esc>
+cmap <C-K> <Up>
+cmap <C-J> <Down>
+
+set ignorecase
+set relativenumber
+set smartcase
