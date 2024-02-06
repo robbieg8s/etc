@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+set -ex
+
+HALFYAK_ETC_LIBEXEC="${$(print -P '%x'):A:h}"
+
+printf '%s: Running weekly tasks\n' "$(date)"
+
+# Brew maintenance
+"${HALFYAK_ETC_LIBEXEC}/brew-backup-update-upgrade"
+
+printf '%s: Completed weekly tasks\n' "$(date)"

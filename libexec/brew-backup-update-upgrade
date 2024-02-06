@@ -1,0 +1,33 @@
+#!/bin/zsh
+
+set -ex
+
+# Save Brew config
+BREWFILE="${HOME}/cloud/etc/homebrew/Brewfile"
+mkdir -p "${BREWFILE%/*}"
+touch "${BREWFILE}"
+cp "${BREWFILE}" "${BREWFILE}.bak"
+rm "${BREWFILE}"
+brew bundle dump --file="${BREWFILE}"
+# Update and Upgrade Brew
+brew update
+# Don't auto upgrade casks
+# - openjdk8, needed by plantuml, is interactive
+# - you can't pin casks to avoid auto upgrade
+brew upgrade --formula
+# Notify if casks are out of date
+() {
+  output="${1:?}"
+  brew upgrade --dry-run --cask > "${output}"
+  if [[ -s "${output}" ]]
+  then
+    upgrades="$(sed -ne '/^.*upgrade \(.* outdated packages\{0,1\}\).*$/s//\1/p' <"${output}")"
+    sendmail -i "${USER}"<<END_MAIL
+Subject: Brew cask: ${upgrades:-output parser broken}
+
+$(cat ${output})
+
+:; brew upgrade --cask
+END_MAIL
+  fi
+} =(true)
