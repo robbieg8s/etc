@@ -33,7 +33,7 @@ setopt RC_QUOTES
 
 ## Sundry zsh parameters
 DIRSTACKSIZE=48
-HISTFILE="${ETC_ZSH_DIR}"/history
+HISTFILE="${HOME}/.local/share/halfyak/etc/zsh/history"
 HISTSIZE=1000
 SAVEHIST=1000
 
