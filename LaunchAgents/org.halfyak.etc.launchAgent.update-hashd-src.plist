@@ -8,7 +8,7 @@
     <array>
       <string>${HALFYAK_ETC}/libexec/create-hashd-index</string>
       <!-- Technically this should respect XDG_CACHE_HOME, but environment-expand isn't smart enough yet -->
-      <string>${HOME}/.cache/halfyak.org/etc/sourceables.hashd-src</string>
+      <string>${HOME}/.cache/halfyak.org/etc/sourceables/hashd-src</string>
       <string>${HOME}/src</string>
     </array>
     <key>ThrottleInterval</key>
