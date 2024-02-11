@@ -43,6 +43,13 @@ reloadConfigurationBatcher.configurationWatcher = hs.pathwatcher.new(
   hs.fnutils.partial(reloadConfigurationBatcher.trigger, reloadConfigurationBatcher)
 ):start()
 
+---- Enable CLI
+-- This provides the message port for
+-- /Applications/Hammerspoon.app/Contents/Frameworks/hs/hs
+-- See also bin/hammerspoon-alert
+
+require("hs.ipc")
+
 --- Notify that everything is loaded
 
 hs.alert.show("Hammerspoon configuration loaded")
