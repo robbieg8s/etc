@@ -130,6 +130,29 @@ mailMonitor.configurationWatcher = hs.pathwatcher.new(
 ):start()
 mailMonitor:checkSpool()
 
+--- Mailto callback handler
+-- Hammerspoon can provide the mailto: handler, so we direct it to the gmail web interface
+
+-- To have macOS find this, you also need to set launchservices to call hammerspoon.
+-- The macOS Mail App can set the default and offers hammerspoon as a choice.
+-- This is checked by libexec/mailto-handler-check, called from libexec/weekly.
+
+function handleMailto(scheme, host, params, fullUrl, senderPID)
+  function encodeByte(char)
+    return string.format("%%%02X", string.byte(char))
+  end
+  -- Gmail does not (iiuc as of this writing) provide a way to open the compose window
+  -- within the inbox tab via a url. The url below gets Gmail to handle the mailto,
+  -- which it does by opening a full tab compose window, which isn't great (because
+  -- you can't see which account is going to send), but is workable.
+  -- See https://stackoverflow.com/posts/70030094/revisions for more on gmail urls
+  local gmailPrefix = "https://mail.google.com/mail/?extsrc=mailto&url="
+  local gmailUrl = gmailPrefix .. fullUrl:gsub("[^0-9a-zA-Z ]", encodeByte)
+  hs.urlevent.openURL(gmailUrl);
+end
+
+hs.urlevent.mailtoCallback = handleMailto
+
 ---- Enable CLI
 -- This provides the message port for
 -- /Applications/Hammerspoon.app/Contents/Frameworks/hs/hs

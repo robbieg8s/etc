@@ -1,0 +1,29 @@
+#!/bin/zsh
+
+set -ex
+
+QUERY_HANDLER_JQ="$(cat<<'END_JQ'
+.LSHandlers[]
+| select(.LSHandlerURLScheme == $scheme)
+| .LSHandlerRoleAll
+END_JQ
+)"
+
+() {
+  launchServices="${1:?}"
+  # plutil converts in place by default, and i really don't want to mess up this plist, so make a safety copy
+  cp ~/Library/Preferences/com.apple.LaunchServices/com.apple.launchservices.secure.plist "${launchServices}"
+  plutil -convert json "${launchServices}"
+  mailto_handler="$(jq --raw-output "${QUERY_HANDLER_JQ}" --arg scheme "mailto" < "${launchServices}")"
+  # Notify if the mail handler is wrong
+  if [[ "${mailto_handler}" != 'org.hammerspoon.hammerspoon' ]]
+  then
+    sendmail -i "${USER}"<<END_MAIL
+Subject: Mailto handler is not Hammerspoon
+
+The mailto: handler appears to be "${mailto_handler}".
+You can fix this by opening Mail.app, Settings..., Default email reader:, and choosing Hammerspoon.app
+
+END_MAIL
+  fi
+} =(true)
