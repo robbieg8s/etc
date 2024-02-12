@@ -43,6 +43,63 @@ reloadConfigurationBatcher.configurationWatcher = hs.pathwatcher.new(
   hs.fnutils.partial(reloadConfigurationBatcher.trigger, reloadConfigurationBatcher)
 ):start()
 
+--- Audio changes
+
+local audioBatcher = Batcher:new(2, "Audio configuration change")
+-- Select by name or uid, we use both because for some devices (like Thronmax Pulse), the uid isn't stable,
+-- and for others (like the built in microphone/speaker), the name depends on the device model. Uid here isn't
+-- a UUID, for example, BuiltInSpeakerDevice.
+function audioBatcher.findFirstAvailable(kind, devices, ...)
+    for i, nameOrUid in ipairs({...}) do
+        for j, device in ipairs(devices) do
+            if ((device:name() == nameOrUid) or (device:uid() == nameOrUid)) then
+                return device
+            end
+        end
+    end
+end
+function audioBatcher:selectInput()
+    local input = audioBatcher.findFirstAvailable(
+        "Input",
+        hs.audiodevice.allInputDevices(),
+        "THRONMAX PULSE MICROPHONE",
+        "BuiltInMicrophoneDevice")
+    if (input ~= hs.audiodevice.defaultInputDevice()) then
+        self.selectedInput = input
+        self:trigger()
+    end
+end
+function audioBatcher:selectOutput()
+    local output = audioBatcher.findFirstAvailable(
+        "Output",
+        hs.audiodevice.allOutputDevices(),
+        "External Headphones",
+        "Creative Stage Air V2",
+        "Beats Flex",
+        "BuiltInSpeakerDevice")
+    if (output ~= hs.audiodevice.defaultOutputDevice()) then
+        self.selectedOutput = output
+        self:trigger()
+    end
+end
+function audioBatcher:change(event)
+    self:selectInput()
+    self:selectOutput()
+end
+function audioBatcher:fire()
+    self.selectedInput:setDefaultInputDevice()
+    self.selectedOutput:setDefaultOutputDevice()
+    self:alert("🎙 " ..  hs.audiodevice.defaultInputDevice():name() .. "\n🔊 " ..  hs.audiodevice.defaultOutputDevice():name())
+end
+function audioBatcher:init()
+    self.selectedInput = hs.audiodevice.defaultInputDevice()
+    self.selectedOutput = hs.audiodevice.defaultOutputDevice()
+    hs.audiodevice.watcher.setCallback(function (event) self:change(event) end)
+    hs.audiodevice.watcher.start()
+    self:change('init')
+end
+audioBatcher:init()
+
 --- Local mail spool monitoring
 -- This provides a path for surfacing background script notifications persistently
 
