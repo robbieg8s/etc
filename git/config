@@ -7,6 +7,10 @@
   defaultBranch = main
 [mergetool]
   keepBackup = false
+[mergetool "merged"]
+  cmd = git mergetool-merged \"${MERGED}\"
+  keepBackup = false
+  trustExitCode = true
 [pull]
   ff = only
 [push]

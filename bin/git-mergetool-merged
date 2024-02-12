@@ -1,0 +1,22 @@
+#!/bin/sh
+
+# gitconfig to configure this:
+#
+# [mergetool "merged"]
+#   cmd = git mergetool-merged \"${MERGED}\"
+#   keepBackup = false
+#   trustExitCode = true
+
+file="${1:?}"
+
+{ awk -f - "${file}" > /dev/null ; } <<"END_AWK"
+function fail() {
+  print "Unresolved conflict starting at line " FNR > "/dev/stderr"
+  exit 1
+}
+
+/^<<<<<<< .*$/ { fail() }
+/^=======$/ { fail() }
+/^>>>>>>> .*$/ { fail() }
+END_AWK
+exit $?
