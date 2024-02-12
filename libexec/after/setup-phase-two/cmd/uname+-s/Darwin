@@ -17,11 +17,12 @@
   # Remove and readd them all so that link-config can manage removal in the macOS location
   rm -rf "${launchd_plists_expanded}"
   mkdir -p "${launchd_plists_expanded}"
-  # Permit LaunchAgents to expand the HALFYAK_ETC root
-  export HALFYAK_ETC
   for launchd_plist in "${HALFYAK_ETC}"/LaunchAgents/*.plist
   do
-    "${HALFYAK_ETC}"/bin/environment-expand "${launchd_plist}" > "${launchd_plists_expanded}/${launchd_plist:t}"
+    # Permit LaunchAgents to expand the HALFYAK_ETC root
+    env HALFYAK_ETC="${HALFYAK_ETC}" \
+      "${HALFYAK_ETC}"/bin/environment-expand "${launchd_plist}" \
+      > "${launchd_plists_expanded}/${launchd_plist:t}"
   done
   # For now, just update the LaunchAgents, and invoke launchctl manually
   noglob "${HALFYAK_ETC}"/libexec/link-config ~/Library/LaunchAgents/ "${launchd_plists_expanded}"/*.plist
