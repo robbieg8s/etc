@@ -1,0 +1,82 @@
+#!/bin/sh
+# Analyze a git checkout for fixups and offer solutions
+
+# This fetches, prunes, and gcs the current git repo, sets the remote HEAD if necessary,
+# and then for each branch,
+# - warns if it is ahead of upstream, and if not
+# - removes any stale branch (no upstream and fully merged to main), printing a recovery
+#   command just in case
+# - provides options for analyzing/pushing/deleting the branch, and indicates if the tree
+#   of the branch matches it's merge base with remote main (common in reworked branches).
+
+set -e
+
+echo "Fetching"
+git fetch
+
+echo
+echo "Pruning remotes"
+git remote | while read remote
+do
+  git remote prune "${remote}"
+  if ! git symbolic-ref refs/remotes/"${remote}"/HEAD >/dev/null
+  then
+    # This means that we don't know the remotes main branch, so figure that out
+    git remote set-head "${remote}" --auto
+    printf "Fixed %s/HEAD -> %s\n" "${remote}" "$(git symbolic-ref --short refs/remotes/${remote}/HEAD)"
+  fi
+done
+
+echo
+echo "Cleaning up stale branches"
+git for-each-ref refs/heads --format='%(refname:short) %(upstream:short)' | while read branch upstream
+do
+  if git rev-parse --verify --quiet "${upstream}" >/dev/null
+  then
+    commit_count="$(git rev-list "${upstream}..${branch}" --count)"
+    if [ 0 -ne "${commit_count}" ]
+    then
+      printf "%s is %s commits ahead of upstream %s\n" "${branch}" "${commit_count}" "${upstream}"
+    fi
+  else
+    # branch has no upstream, so compare it to each remote, typically this is just origin
+    git remote | while read remote
+    do
+      remote_main="$(git symbolic-ref --short refs/remotes/"${remote}"/HEAD)"
+      commit_count="$(git rev-list "${remote_main}..${branch}" --count)"
+      if [ 0 -eq "${commit_count}" ]
+      then
+        # upstream is invalid (or empty) and branch fully merged to main
+        commit=$(git rev-parse "${branch}")
+        printf "Removing stale branch %s\n" "${branch}"
+        printf ":; git branch '%s' '%s'\n" "${branch}" "${commit}"
+        if [ -n "${upstream}" ]
+        then
+          printf ":; git branch --set-upstream-to='%s'\n" "${upstream}"
+        fi
+        git branch -d "${branch}"
+      else
+        extra=""
+        merge_base="$(git merge-base "${remote_main}" "${branch}")"
+        merge_base_tree="$(git show "${merge_base}" --format=format:%T --no-patch)"
+        if [ "$(git show --format=format:%T --no-patch "${branch}" --)" = "${merge_base_tree}" ]
+        then
+          extra=" (tree identical to tree of git merge-base '${remote_main}')"
+        fi
+        printf "Stale branch %s%s has %s commits not on %s\n" \
+          "${branch}" "${extra}" "${commit_count}" "${remote_main}"
+        printf ":; git log --oneline '%s..%s'\n" "${remote_main}" "${branch}"
+        printf ":; git diff \$(git merge-base '%s' '%s' --) '%s' --\n" "${remote_main}" "${branch}" "${branch}"
+        printf ":; git tag --contains '%s'\n" "${branch}"
+        printf ":; git branch -D '%s'\n" "${branch}"
+        printf ":; git push --set-upstream '%s' '%s'\n" "${remote}" "${branch}"
+      fi
+    done
+  fi
+done
+
+echo
+echo "Garbage collecting"
+git gc
+echo
+echo "Done"
