@@ -1,0 +1,2 @@
+# Treat Unity meta files as binary to avoid crufting up diffs
+*.meta binary

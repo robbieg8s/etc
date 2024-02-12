@@ -1,0 +1,25 @@
+[color "diff"]
+  meta = blue
+  func = magenta
+[diff]
+  noprefix = true
+[init]
+  defaultBranch = main
+[mergetool]
+  keepBackup = false
+[pull]
+  ff = only
+[push]
+  default = current
+
+# Enable commit and tag signing
+
+[gpg]
+  format = ssh
+[gpg "ssh"]
+  allowedSignersFile = ~/.ssh/allowed_signers
+
+[commit]
+  gpgsign = true
+[tag]
+  gpgsign = true

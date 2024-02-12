@@ -12,7 +12,7 @@ set -e
 # :h:h removes libexec/setup and is the etc root.
 # While this could be $(git rev-parse --absolute-git-dir), i want
 # to avoid requiring git for setup to function correctly
-ETC_DIR="${$(print -P '%x'):A:h:h}"
+HALFYAK_ETC="${$(print -P '%x'):A:h:h}"
 
 # Keep bin in etc for less repo management overhead
 ln -fns ~/etc/bin ~/bin
@@ -22,16 +22,35 @@ mkdir -p ~/src
 mkdir -p ~/tmp
 mkdir -p ~/var/log
 
-# Link configuration with fixed locations
+# Dotfiles maintained via symlinks to etc
 
 # This re-relativizes the absolute path to the dotfiles directory with respect
 # to ~, so that the links are relative if possible. If not, it will fall back to absolute.
 # Keeping them relative makes mounting them into docker containers easier
-noglob "${ETC_DIR}"/libexec/link-config ~/. "${ETC_DIR#${HOME:A}/}"/dotfiles/*
+noglob "${HALFYAK_ETC}"/libexec/link-config ~/. "${HALFYAK_ETC#${HOME:A}/}"/dotfiles/*
+
+# The git config is special, as the include mechanism is relative to the containing file,
+# which means we can't use symlinks without encoding the location of this configuration, since
+# the content is relative to the actual file, but git will consider it relative to the symlink.
+# In addition, the git core.attributesFile and core.excludesFile are relative to the checkout,
+# and hence need to be absolute in the global config.
+# So instead, we generate ~/.gitconfig with an appropriate includes, all using ~ where possible.
+# This is also a convenient place to federate private git configuration. There is a coupling here
+# that private is checked out under etc - i'll revisit that once i see what else ends up there.
+HALFYAK_ETC_FOR_GIT="${HALFYAK_ETC/#${(q)HOME:A}/~}"
+cat > "${HOME}/.gitconfig" <<END_GIT_CONFIG
+[include]
+  path = ${HALFYAK_ETC_FOR_GIT}/git/config
+  path = ${HALFYAK_ETC_FOR_GIT}/private/git/config
+[core]
+  attributesFile = ${HALFYAK_ETC_FOR_GIT}/git/attributes
+  excludesFile = ${HALFYAK_ETC_FOR_GIT}/git/ignore
+END_GIT_CONFIG
+
 
 ## Phase Two
 
 # Now that dotfiles are linked, we can do more. However, this shell didn't get a chance to
 # read zshenv in particular, so hand off to another shell for that bit. Don't source it,
 # because we want to ensure the shell can find and read it by now.
-exec "${ETC_DIR}"/libexec/setup-phase-two
+exec "${HALFYAK_ETC}"/libexec/setup-phase-two
