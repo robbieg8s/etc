@@ -148,12 +148,12 @@ function handleMailto(scheme, host, params, fullUrl, senderPID)
   -- See https://stackoverflow.com/posts/70030094/revisions for more on gmail urls
   local gmailPrefix = "https://mail.google.com/mail/?extsrc=mailto&url="
   local gmailUrl = gmailPrefix .. fullUrl:gsub("[^0-9a-zA-Z ]", encodeByte)
-  hs.urlevent.openURL(gmailUrl);
+  hs.urlevent.openURL(gmailUrl)
 end
 
 hs.urlevent.mailtoCallback = handleMailto
 
----- Enable CLI
+--- Enable CLI
 -- This provides the message port for
 -- /Applications/Hammerspoon.app/Contents/Frameworks/hs/hs
 -- See also bin/hammerspoon-alert
