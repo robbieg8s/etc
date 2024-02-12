@@ -1,0 +1,9 @@
+#!/bin/sh
+# Print the currently configured git user name and email.
+
+set -e
+
+userName="$(git config --get user.name)"
+userEmail="$(git config --get user.email)"
+
+printf "%s (%s)\n" "${userName}" "${userEmail}"

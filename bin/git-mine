@@ -1,0 +1,4 @@
+#!/bin/sh
+# Show changes by the current author
+
+git log --author="$(git config --get user.email)" "$@"

@@ -1,0 +1,10 @@
+#!/bin/sh
+# Merge a branch back untracked so it can be reworked
+
+# This is designed for a workflow where "mostly final"
+# changes are prepared on a branch, and it is then reworked
+# and segmented on a target branch for publication.
+
+# It's ok if the merge fails, don't abort
+git merge --no-commit --no-ff "$@"
+git reset --mixed -N HEAD

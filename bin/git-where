@@ -1,0 +1,12 @@
+#!/bin/sh
+# Print a symbolic description of the current HEAD
+
+symbolic=$(git symbolic-ref --quiet HEAD)
+if [ -z "${symbolic}" ]
+then
+    location="detached $(git describe --always --all --contains HEAD)"
+else
+  location="${symbolic#refs/heads/}"
+fi
+
+printf '%s\n' "${location}"
