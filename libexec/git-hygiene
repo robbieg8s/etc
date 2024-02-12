@@ -1,0 +1,81 @@
+#!/bin/zsh -f
+
+set -e
+
+notify() {
+  local repo="${1:?}"
+  local subject="${2:?}"
+  local body="${3:?}"
+  sendmail -i "${USER}"<<END_MAIL
+Subject: ${subject}
+
+${repo}:
+$(cat "${body}")
+END_MAIL
+}
+
+examine() {
+  local repo="${1:?}"
+  () {
+    local out="${1:?}"
+    local tmp="${2:?}"
+    printf "Checking hygiene for '%s'\n" "${repo}"
+    git -C "${repo}" for-each-ref --format='%(refname:short) %(upstream:short)' refs/heads | {
+      : $((warn=0))
+      while read branch upstream
+      do
+        if [[ -z "${upstream}" ]]
+        then
+          : $((++warn))
+          printf 'Branch %s has no upstream.\n' "${branch}" >> "${out}"
+        else
+          local remoteUpstream="$(git -C "${repo}" branch --list --remotes "${upstream}")"
+          if [[ -z "${remoteUpstream}" ]]
+          then
+            : $((++warn))
+            printf 'Branch %s has had remote upstream removed.\n' "${branch}" >> "${out}"
+          else
+            commitCount="$(git -C "${repo}" rev-list --count "${upstream}..${branch}" --)"
+            if [[ 0 -ne "${commitCount}" ]]
+            then
+              : $((++warn))
+              printf 'Branch %s is %s commits ahead of upstream %s.\n' "${branch}" "${commitCount}" "${upstream}" >> "${out}"
+            fi
+          fi
+        fi
+      done
+      if ! git -C "${repo}" pristine >> "${out}"
+      then
+        : $((++warn))
+      fi
+      if ! git -C "${repo}" stash list --exit-code > "${tmp}"
+      then
+        printf '\nStashed changes are present:\n' >> "${out}"
+        cat "${tmp}" >> "${out}"
+        : $((++warn))
+      fi
+      if [[ 0 -ne "${warn}" ]]
+      then
+        notify "${repo}" "Git repository ${repo##*/} has ${warn} warning(s)" "${out}"
+      fi
+    }
+  } =(true) =(true)
+  git -C "${repo}" submodule --quiet foreach 'printf "%s/%s\n" "${toplevel}" "${sm_path}"' | while read subrepo
+  do
+    examine "${subrepo}"
+  done
+}
+
+for arg in "$@"
+do
+  if [[ "${arg}" = */ ]]
+  then
+    ls "${arg}" | while read dir
+    do
+      examine "${arg}${dir}"
+    done
+  else
+    examine "${arg}"
+  fi
+done
+

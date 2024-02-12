@@ -1,0 +1,36 @@
+#!/bin/zsh -f
+
+# indicate, by exit status, if the git checkout is clean
+
+set -e
+
+show_indented() {
+  sed -e 's/^/  /' "$@"
+}
+
+() {
+  err=0;
+  out="${1}"
+  git update-index --refresh &>"${out}" || {
+    ((err += 4))
+    echo 'Unstaged Changes:'
+    show_indented "${out}"
+  }
+  git diff-files --name-only --exit-code &>"${out}" || {
+    ((err += 8))
+    echo 'Files with Differences:'
+    show_indented "${out}"
+  }
+  git diff-index --cached --name-only --exit-code HEAD &>"${out}" || {
+    ((err += 16))
+    echo 'Uncommitted Changes:'
+    show_indented "${out}"
+  }
+  git ls-files --others --exclude-standard &>"${out}" && [[ ! -s "${out}" ]] || {
+    ((err += 32))
+    echo 'Untracked Files:'
+    show_indented "${out}"
+  }
+
+  exit "${err}"
+} =(true)
