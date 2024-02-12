@@ -160,6 +160,51 @@ hs.urlevent.mailtoCallback = handleMailto
 
 require("hs.ipc")
 
+--- Window management functions and hotkeys
+
+function normalizeWindow(screen, window)
+  local frame = screen:frame()
+  -- A few windows i like in particular positions
+  local bundleId = window:application():bundleID()
+  if ("com.googlecode.iterm2" == bundleId) then
+    -- iTerm
+    -- This is 132 columns of Menlo 15, my current terminal font, plus the iTerm2 padding
+    -- In priciple i can query the font geometry using osascript:
+    --   ObjC.import('AppKit');
+    --   $.NSFont.fontWithNameSize('Menlo',15.0). maximumAdvancement.width;
+    -- but i'd still have to know the padding. Probably i should just use the iTerm API directly,
+    -- but i've not yet invested in understanding that, and this is convenient.
+    frame.w = 1213
+  elseif ("com.tinyspeck.slackmacgap" == bundleId) then
+    -- Slack
+    -- Fixed width, pushed to the right edge
+    local slackWidth = 1280
+    frame.x = frame.x2 - slackWidth
+    frame.w = slackWidth
+  -- else for everything else, just maximize - leave frame unchanged
+  end
+  window:setFrame(frame)
+end
+
+function normalizeCurrentWindow()
+  -- main is screen with currently focused window
+  local screen = hs.screen.mainScreen()
+  local window = hs.window.frontmostWindow()
+  normalizeWindow(screen, window)
+end
+
+function switchCurrentWindowScreen()
+  local screen = hs.screen.mainScreen()
+  local window = hs.window.frontmostWindow()
+  -- No need to set duration, as the normalize makes everything happen fast anyway
+  window:moveToScreen(screen:next())
+  -- We need to pass values through, otherwise normalizeWindow sees stale values
+  normalizeWindow(screen:next(), window)
+end
+
+hs.hotkey.bind({"ctrl"}, "pageup", "normalize window", normalizeCurrentWindow)
+hs.hotkey.bind({"ctrl"}, "pagedown", "switch screen", switchCurrentWindowScreen)
+
 --- Notify that everything is loaded
 
 hs.alert.show("Hammerspoon configuration loaded")
