@@ -1,0 +1,7 @@
+#!/bin/zsh -f
+
+() {
+    local pbfile="${1:?}"
+    vi "${pbfile}" && cat "${pbfile}" | pbcopy
+    cat "${pbfile}"
+} =(pbpaste)
