@@ -1,0 +1,29 @@
+#!/bin/zsh
+
+set -ex
+
+ATTACHED_IMAGES_FIXUPS_JQ="$(cat<<'END_JQ'
+.images[]."system-entities"[]."mount-point"
+| select(.)
+| ":; hdiutil detach -force \(.)"
+END_JQ
+)"
+
+() {
+  output="${1:?}"
+  fixups="${2:?}"
+  hdiutil info -plist > "${output}"
+  plutil -convert json "${output}"
+  jq --raw-output "${ATTACHED_IMAGES_FIXUPS_JQ}" <"${output}" >"${fixups}"
+  # Notify if we found fixups
+  if [[ -s "${fixups}" ]]
+  then
+    sendmail -i "${USER}"<<END_MAIL
+Subject: Disk Images Attached
+
+You have some (possibly stale) disk images attached:
+$(cat ${fixups})
+:; hdiutil info
+END_MAIL
+  fi
+} =(true) =(true)

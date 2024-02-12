@@ -50,7 +50,7 @@ cleanup() {
   rm -rf "${test_dir}"
 }
 
-trap 'cleanup ; trap - ERR EXIT' ERR EXIT
+trap 'exit_code="$?" ; cleanup ; trap - ERR EXIT ; exit "${exit_code}"' ERR EXIT
 trap 'cleanup ; trap - INT ; kill -INT $$' INT
 
 invoke_command_unchecked() {

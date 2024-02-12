@@ -15,4 +15,7 @@ printf '%s: Running weekly tasks\n' "$(date)"
 # Validate mailto: handler set correctly
 "${HALFYAK_ETC_LIBEXEC}/mailto-handler-check"
 
+# Notify if we have disk images attached
+"${HALFYAK_ETC_LIBEXEC}/attached-disk-image-notify"
+
 printf '%s: Completed weekly tasks\n' "$(date)"

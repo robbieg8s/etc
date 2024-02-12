@@ -1,0 +1,132 @@
+#!/bin/zsh
+
+set -e
+
+message() {
+  if [[ -z "${SILENT}" ]]
+  then
+    printf '%s\n' "$@" 1>&2
+  fi
+}
+
+usage() {
+  message \
+    "Usage: $0 [ --hdiutil-fs FS ] [ --hdiutil-size SIZE ] [ --hdiutil-volname VOLNAME ]" \
+    "  FS: Filesystem APFS|HFS+|... (default HFS+)" \
+    "  SIZE: ??b|??k|??m|??g|??t|??p|??e (default 1g)" \
+    "  VOLNAME: String name for volume (default a newly generated uuid)" \
+    "  Detailed documentation for --hdiutil-* arguments as per hdiutil create"
+}
+
+error() {
+  message "$@"
+  usage
+  exit 1
+}
+
+while [ $# -ne 0 ]
+do
+  case "${1:?}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    --hdiutil-fs)
+      [ $# -ge 2 ] || error "Option $1 requires argument"
+      FS="${2:?}"
+      shift 2
+      ;;
+    --hdiutil-size)
+      [ $# -ge 2 ] || error "Option $1 requires argument"
+      SIZE="${2:?}"
+      shift 2
+      ;;
+    --hdiutil-volname)
+      [ $# -ge 2 ] || error "Option $1 requires argument"
+      VOLNAME="${2:?}"
+      shift 2
+      ;;
+    --silent)
+      SILENT="yes"
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      error "Unrecognized option: '${1}'"
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+: FS="${FS=HFS+}"
+: SIZE="${SIZE=1g}"
+: VOLNAME="${VOLNAME=$(uuidgen)}"
+# SILENT does not need defaulting
+
+# Set up hooks to unmount on exit
+cleanup() {
+  # turn off ERR_EXIT during cleanup, because we don't want to exit the trap early
+  set +e
+  # mount is the variable name we set below with the mount point
+  [[ -e "${mount}" ]] && hdiutil detach -force "${mount}"
+}
+
+# The trap logic here is derived from a bit of reading and experimenting. Only
+# trapping EXIT misses ctrl-c.
+# For SIGINT, do the cleanup ; clear the handler ; then exit via signal for transparency
+trap 'cleanup ; trap - INT ; kill -INT $$' INT
+# If trap ERR (set -e induced) returns, the shell proceeds, so ensure it exits by exiting
+trap 'exit_code="$?" ; cleanup ; trap - ERR EXIT ; exit "${exit_code}"' ERR EXIT
+
+() {
+  out="${1:?}"
+  # We want to know the filename hdiutil picks, and it appends a type dependent suffix - for the default UDIF it's .dmg, for
+  # SPARSE it's .sparseimage, and for SPARSEBUNDLE its .sparsebundle. So use -plist and capture the output
+  # I've not added --silent handling below, but it doesn't seem too noisy by default
+  whence pwgen >/dev/null || error 'pwgen is required, please ensure it is on your PATH'
+  pwgen 32 | hdiutil create -encryption -stdinpass -volname "${VOLNAME}" -size "${SIZE}" -type SPARSE -fs "${FS}" -attach -plist "${VOLNAME}" > "${out}"
+  [[ 0 -eq "${#pipestatus:#0}" ]]
+  # Make the output parseable
+  plutil -convert json "${out}"
+  # And parse it
+  data="$(jq --raw-output --from-file <(cat<<END_JQ
+    {
+      "image": ."image-components"[0],
+      "mount": ."system-entities"[]."mount-point" | select(.)
+    } | @sh "image=\(.image)\nmount=\(.mount)"
+END_JQ
+  ) "${out}" )"
+  source <(cat<<<"${data}")
+} =(true)
+
+# Discard the image now, then it will be gc'd on detach (unmount)
+rm -r "${image:?}"
+
+if [ $# -eq 0 ]
+then
+  # No arguments, so let the user do stuff
+  # stdout is just the mount point, which is most useful to a script calling us
+  printf '%s\n' "${mount:?}"
+  # and be a bit more helpful on stderr
+  message \
+    "You can use your ephemeral volume via" \
+    ":; cd '${mount}'" \
+    "And when you are done" \
+    ":; hdiutil detach -force '${mount:?}'" \
+    "Or just eject in finder"
+  # Disable the eject cleanup
+  cleanup() { }
+  exit 0
+fi
+
+# Go to the new volume
+cd "${mount:?}"
+# And do what we were asked
+# This must be last so that the exit status is propagated
+"$@"
