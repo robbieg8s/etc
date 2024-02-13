@@ -23,7 +23,7 @@
   diff-words = diff --word-diff-regex='[a-zA-Z]+|[^[:space:]]'
   discard = checkout --
   initial-commit = commit --allow-empty --message='Initial commit'
-  ls-added = diff --name-only --diff-filter=A --staged
+  ls-added = diff --name-only --diff-filter=A
   ls-deleted = diff --name-only --diff-filter=D
   ls-modified = diff --name-only --diff-filter=M
   ls-staged = diff --name-only --staged
