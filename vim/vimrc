@@ -1,3 +1,5 @@
+vim9script
+
 set autoindent
 set autoread
 set autowriteall
@@ -9,7 +11,7 @@ set grepformat=%f:%l:%c:%m
 set grepprg=rg\ --vimgrep
 set ignorecase
 set incsearch
-set laststatus=2 " => always show status line
+set laststatus=2 # => always show status line
 set mouse=a
 set relativenumber
 set shiftwidth=2
