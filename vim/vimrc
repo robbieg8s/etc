@@ -25,6 +25,7 @@ set wildmode=list:longest
 filetype plugin on
 syntax on
 
+map <C-X> <Esc>
 map! <C-X> <Esc>
 
 nmap <Tab> >>
@@ -33,6 +34,7 @@ nmap <C-G> :cnext<CR>
 
 vmap <Tab> >gv
 vmap <S-Tab> <gv
+
 cmap <C-K> <Up>
 cmap <C-J> <Down>
 
