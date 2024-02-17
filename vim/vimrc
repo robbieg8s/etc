@@ -1,0 +1,35 @@
+set autoindent
+set autoread
+set autowriteall
+set background=dark
+set cedit=<C-X>
+set cmdheight=3
+set expandtab
+set grepformat=%f:%l:%c:%m
+set grepprg=rg\ --vimgrep
+set ignorecase
+set incsearch
+set laststatus=2 " => always show status line
+set mouse=a
+set relativenumber
+set shiftwidth=2
+set smartcase
+set spell
+set spelllang=en_au
+set tabstop=2
+set textwidth=132
+set wildmode=list:longest
+
+filetype plugin on
+syntax on
+
+map! <C-X> <Esc>
+
+nmap <Tab> >>
+nmap <S-Tab> <<
+nmap <C-G> :cnext<CR>
+
+vmap <Tab> >gv
+vmap <S-Tab> <gv
+cmap <C-K> <Up>
+cmap <C-J> <Down>
