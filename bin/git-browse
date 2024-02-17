@@ -1,0 +1,250 @@
+#!/bin/zsh -f
+# Open the current working directory git context in the web browser
+
+set -e
+
+log() {
+  printf '%s\n' "$@" 1>&2
+}
+
+usage() {
+  log "Usage: $0 [ -h | --help ] [ -n | --dry-run ] [ -x ] [ commit | file ]" \
+    '  -h, --help: Show usage, all other options ignored' \
+    '  -n, --dry-run: Just show the computed url, do not attempt to open it' \
+    '  -x: Immediately set -x the script, to help with debugging' \
+    '  With no arguments, opens the current branch, or repository root if on default branch' \
+    '  With commit argument, opens that commit.' \
+    '  With file argument, opens that file at the current commit in the checkout.'
+}
+
+error() {
+  log "$@"
+  usage
+  exit 1
+}
+
+while [[ "$#" -ne 0 ]]
+do
+  case "${1:?}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -n|--dry-run)
+      DRY_RUN='yes'
+      shift
+      ;;
+    -x)
+      set -x
+      shift
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      error "Unrecognized option: '${1}'"
+      ;;
+    *)
+      break
+      ;;
+  esac
+done
+
+open_dry_run() {
+  local url="${1:?}"
+  printf '%s\n' "${url}"
+}
+
+open_on_Darwin() {
+  local url="${1:?}"
+  # Place the link on the clipboard also
+  printf '%s' "${url}" | pbcopy
+  open "${url}"
+}
+
+open_on_Linux() {
+  local url="${1:?}"
+  xdg-open "${url}"
+}
+
+do_open() {
+  local platform_open
+  if [[ -n "${DRY_RUN}" ]]
+  then
+    platform_open="open_dry_run"
+  else
+    platform_open="open_on_$(uname -s)"
+  fi
+  if [[ "$(command -v "${platform_open}")" != "${platform_open}" ]]
+  then
+    log "No command for platform_open='${platform_open}', falling back to default print"
+    platform_open="open_dry_run"
+  fi
+  "${platform_open}" "$@"
+}
+
+provider_url() {
+  local host="${1:?}"
+  local slug="${2:?}"
+  local context="${3:?}"
+  shift 3
+
+  # This declarative approach appears to assume the ordering is consistent across providers, but since
+  # this is zsh we can use %n$s printf conversions in future if we need to.
+
+  # Bitbucket
+  local host_base_bitbucket_org='https://bitbucket.org/%s'
+  local host_branch_bitbucket_org='branch/%s'
+  local host_commit_bitbucket_org='commits/%s'
+  local host_file_bitbucket_org='src/%s/%s'
+  local host_default_bitbucket_org=''
+
+  # Github
+  local host_base_github_com='https://github.com/%s'
+  local host_branch_github_com='tree/%s'
+  local host_commit_github_com='commit/%s'
+  local host_file_github_com='blob/%s/%s'
+  local host_default_github_com=''
+
+  # Normalize the DNS name to look up the provider specific details
+  # This encoding is unique, since DNS names can't have empty components, so consecutive dots don't happen
+  local host_key="${${(L)host//./_}//-/__/}"
+  local host_base_key="host_base_${host_key}"
+  [[ -v "${host_base_key}" ]] || error "No provider configuration for host '${host}'"
+  local host_context_key="host_${context}_${host_key}"
+  if [[ ! -v "${host_context_key}" ]]
+  then
+    log "No pattern for context '${context}' on provider '${host}', falling back to default"
+    host_context_key="host_default_${host_key}"
+  fi
+  # If host_context_key is still unset (i.e. no default was declared above), it'll fall back to empty, which
+  # is likely ok. Note also we use `print -rf` not printf to suppress extra data in $@ rather that get extra lines.
+  printf '%s/%s' "$(print -rf "${(P)host_base_key}" "${slug}")" "$(print -rf "${(P)host_context_key}" "$@")"
+}
+
+format_and_open() {
+  # If you add support for BTF git servers, mirroring should be handled here, e.g. by inspecting pushurl
+  local origin host slug
+  origin="$(git config remote.origin.url)"
+  local precolon="${origin%%:*}"
+  case "${precolon}" in
+    ssh|git|http|https|ftp|ftps)
+      # It's a protocol, parse the url
+      # See git help clone, GIT URLS, for this list of protocols
+      local user_host_port_path_to_repo="${origin#*://}"
+      host="${${${user_host_port_path_to_repo%%/*}%:*}#*@}"
+      slug="${${user_host_port_path_to_repo#*/}%.git}"
+      ;;
+    *)
+      # This is the alternative scp-like syntax
+      # In this case, the precolon part looks like [user@]host
+      host="${precolon#*@}"
+      slug="${${origin#*:}%.git}"
+      ;;
+  esac
+  # Some light validation just things went wrong
+  # See RFC1035 https://www.ietf.org/rfc/rfc1035.txt
+  [[ "${host}" =~ ^[a-zA-Z0-9.-]*$ ]] || error "Parsed host '${host}' does not look like a DNS name"
+  # It's harder to find strict documentation about this one, and it's notionally provider specific
+  [[ "${slug}" =~ ^[a-zA-Z0-9._/-]*$ ]] || error "Parsed slug '${slug}' does not look like a slug"
+
+  local url
+  url="$(provider_url "${host}" "${slug}" "$@")"
+
+  do_open "${url}"
+}
+
+git_parse_and_show() {
+  case "$#" in
+    0)
+      # fine, no argument shows default
+      local symbolic
+      if symbolic="$(git symbolic-ref -q HEAD 2>/dev/null)"
+      then
+        # We appear to be on a branch
+        local branch="${symbolic#refs/heads/}"
+        local origin_head
+        if ! origin_head="$(git symbolic-ref refs/remotes/origin/HEAD 2>/dev/null)"
+        then
+          log "No default branch for origin, showing '${branch}' as a branch, fix via" \
+            ':; git remote set-head origin --auto' \
+            '  or read documentation at git remote --help'
+          # and treat as empty, so default branch will just be treated as a branch
+          origin_head=''
+        fi
+        local default_branch="${origin_head#refs/remotes/origin/}"
+        if [[ "${branch}" = "${default_branch}" ]]
+        then
+          # For default branch, show default view anyway, because bitbucket looks better that way
+          format_and_open default
+        else
+          format_and_open branch "${branch}"
+        fi
+      else
+        log "HEAD is not symbolic (detached?) - showing repository home"
+        format_and_open default
+      fi
+      ;;
+    1)
+      local argument="${1:?}"
+      local commit
+      # If argument can be parsed as a commit hash, show commit context
+      if commit="$(git rev-parse --verify --end-of-options "${argument}^{commit}" 2>/dev/null)"
+      then
+        format_and_open commit "${commit}"
+      # Else if argument names an existing file, show file in its head commit context
+      elif [[ -f "${argument}" ]]
+      then
+        if ! commit=$(git log --max-count=1 --pretty='format:%H' -- "${argument}" 2>/dev/null)
+        then
+          log "Cannot git log file ${(q)argument}" \
+            '  Failed log command was' \
+            ":; git log --max-count=1 --pretty='format:%H' -- ${(q)argument}"
+        elif [[ -z "${commit}" ]]
+        then
+          log "Cannot find a commit relevant to file ${(q)argument}" \
+            '  Failed log command was' \
+            ":; git log --max-count=1 --pretty='format:%H' -- ${(q)argument}"
+        else
+          local relative upstream
+          if ! relative=$(git ls-files --full-name -- "${argument}")
+          then
+            log "Cannot relativize file ${(q)argument}" \
+              '  Failed relativize command was' \
+              ":; git ls-files --full-name -- ${(q)argument}"
+          else
+            if ! upstream=$(git rev-parse '@{upstream}' 2>/dev/null)
+            then
+              # No upstream, but could be a detached heads or inspecting an old file, so warn but continue
+              log "Cannot determine upstream, cannot determine if commit '${commit}' is valid on remote" \
+                '  Failed upstream command was' \
+                ":; git rev-parse '@{upstream}'"
+            elif ! git merge-base --is-ancestor "${commit}" "${upstream}"
+            then
+              # This is quite likely an error, and easy to fix, so fail out
+              error "Upstream commit '${upstream}' does not have commit '${commit}' as ancestor" \
+                '  Check status or push'
+            # else all good!
+            fi
+            format_and_open file "${commit}" "${relative}"
+          fi
+        fi
+      else
+        error "Cannot parse ${(q)argument} as commit or filename"
+      fi
+      ;;
+    *)
+      error "Ignoring unparseable context, arguments follow one per line:" "${(q)@}"
+      ;;
+  esac
+}
+
+if git rev-parse --git-dir > /dev/null 2>&1
+then
+  git_parse_and_show "$@"
+else
+  # Previous versions of this script switched here to handle mercurial and even older
+  # systems, but everything i use these days is git.
+  printf "Not a git repository"
+fi
