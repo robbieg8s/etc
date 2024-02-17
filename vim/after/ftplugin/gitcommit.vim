@@ -13,7 +13,7 @@ function! s:AddSpaceAfterStartOfLineHyphen()
     return "- "
   else
     return "-"
-  end
+  endif
 endfunction
 
 function! s:SuppressSpaceAfterAddedSpace()
@@ -21,7 +21,7 @@ function! s:SuppressSpaceAfterAddedSpace()
     return ""
   else
     return " "
-  end
+  endif
 endfunction
 
 " Ensure a blank line ahead of the git help, which helps stop over eager autoformat
@@ -31,6 +31,6 @@ if (0 != s:help_line)
   call setpos('.', [ 0, s:help_line - 1, 1, 1 ] )
   if ((2 == s:help_line) || ("" != getline(".")))
     call append('.', [ '' ])
-  end
+  endif
   call setpos('.', s:pos)
-end
+endif
