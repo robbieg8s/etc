@@ -35,3 +35,29 @@ vmap <Tab> >gv
 vmap <S-Tab> <gv
 cmap <C-K> <Up>
 cmap <C-J> <Down>
+
+def XdgCacheDir(name: string, Consumer: func(string), errormsg: string)
+  var dir = ($XDG_CACHE_HOME ?? ($HOME .. "/.cache")) .. "/halfyak.org/etc/vim/" .. name
+  if "" == getftype(dir)
+    mkdir(dir, "p")
+  endif
+  if "dir" == getftype(dir)
+    Consumer(dir)
+  else
+    echoerr errormsg
+  endif
+enddef
+
+XdgCacheDir("backup", (cachedir) => {
+  &backupdir = cachedir
+}, "Cannot make backup directory - backups are off")
+XdgCacheDir("swap", (cachedir) => {
+  &directory = cachedir
+}, "Cannot make swap directory - swap is off")
+XdgCacheDir("undo", (cachedir) => {
+  &undodir = cachedir
+  &undofile = 1
+}, "Cannot make undo directory - undo is off")
+XdgCacheDir("netrw", (cachedir) => {
+  g:netrw_home = cachedir
+}, "Cannot make netrw directory, ~/.vim might get polluted")
