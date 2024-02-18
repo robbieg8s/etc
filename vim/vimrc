@@ -63,3 +63,27 @@ XdgCacheDir("undo", (cachedir) => {
 XdgCacheDir("netrw", (cachedir) => {
   g:netrw_home = cachedir
 }, "Cannot make netrw directory, ~/.vim might get polluted")
+
+# As far as i can tell, these need to be global to be accessible from the expression register
+
+# Tab -> indent if line upto cursor is all whitespace, autocomplete otherwise
+def g:HalfYakTab(): string
+  if strpart( getline('.'), 0, col('.') - 1 ) =~ '^\W*$'
+    return "\<C-T>"
+  else
+    return "\<C-N>"
+  endif
+enddef
+
+# Untab -> dedent if line upto cursor is all whitespace, autocomplete previous match otherwise
+def g:HalfYakUntab(): string
+  if strpart( getline('.'), 0, col('.') - 1 ) =~ '^\W*$'
+    return "\<C-D>"
+  else
+    return "\<C-P>"
+  endif
+enddef
+
+# Mappings for Tab, Untab
+inoremap <Tab> <C-R>=HalfYakTab()<CR>
+inoremap <S-Tab> <C-R>=HalfYakUntab()<CR>
