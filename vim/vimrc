@@ -87,3 +87,15 @@ enddef
 # Mappings for Tab, Untab
 inoremap <Tab> <C-R>=HalfYakTab()<CR>
 inoremap <S-Tab> <C-R>=HalfYakUntab()<CR>
+
+# Use a group so we can delete all and reload
+augroup HalfYakAuGroup
+  autocmd!
+  autocmd BufWritePost vimrc {
+    const scriptfile = expand('<sfile>:p')
+    # If it's the real vimrc, read it again
+    if (expand('%:p') == scriptfile)
+      execute 'source' fnameescape(scriptfile)
+    endif
+  }
+augroup END
