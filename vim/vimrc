@@ -1,9 +1,25 @@
 vim9script
 
+# Do basic keybinds early, so that if something goes wrong, i can edit files competently
+
+map <C-X> <Esc>
+map! <C-X> <Esc>
+
+nmap <Tab> >>
+nmap <S-Tab> <<
+nmap <C-G> :cnext<CR>
+
+vmap <Tab> >gv
+vmap <S-Tab> <gv
+
+cmap <C-K> <Up>
+cmap <C-J> <Down>
+
+# Basic Settings
+
 set autoindent
 set autoread
 set autowriteall
-set background=dark
 set cedit=<C-X>
 set cmdheight=3
 set expandtab
@@ -22,21 +38,19 @@ set tabstop=2
 set textwidth=132
 set wildmode=list:longest
 
+# Filetypes, Syntax, and Colors
+
 filetype plugin on
 syntax on
+# This load is sensitive to which side of syntax it is on, for now do it late.
+if ("iTerm.app" == $TERM_PROGRAM)
+  # Only set background and load colorscheme when we're in iTerm where it looks ok,
+  # use defaults elsewhere (notably Apple_Terminal).
+  set background=dark
+  colorscheme minimal
+endif
 
-map <C-X> <Esc>
-map! <C-X> <Esc>
-
-nmap <Tab> >>
-nmap <S-Tab> <<
-nmap <C-G> :cnext<CR>
-
-vmap <Tab> >gv
-vmap <S-Tab> <gv
-
-cmap <C-K> <Up>
-cmap <C-J> <Down>
+# Put various vim temporaries in XDG Cache
 
 def XdgCacheDir(name: string, Consumer: func(string), errormsg: string)
   var dir = ($XDG_CACHE_HOME ?? ($HOME .. "/.cache")) .. "/halfyak.org/etc/vim/" .. name
@@ -64,7 +78,7 @@ XdgCacheDir("netrw", (cachedir) => {
   g:netrw_home = cachedir
 }, "Cannot make netrw directory, ~/.vim might get polluted")
 
-# As far as i can tell, these need to be global to be accessible from the expression register
+# As far as i can tell, functions need to be global to be accessible from the expression register
 
 # Tab -> indent if line upto cursor is all whitespace, autocomplete otherwise
 def g:HalfYakTab(): string
@@ -91,6 +105,7 @@ inoremap <S-Tab> <C-R>=HalfYakUntab()<CR>
 # Use a group so we can delete all and reload
 augroup HalfYakAuGroup
   autocmd!
+  # Automatically reload vimrc on change
   autocmd BufWritePost vimrc {
     const scriptfile = expand('<sfile>:p')
     # If it's the real vimrc, read it again
