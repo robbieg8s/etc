@@ -119,4 +119,15 @@ augroup HalfYakAuGroup
       execute 'source' fnameescape(scriptfile)
     endif
   }
+  # Copy unnamed register to and from clipboard when focus changes where supported
+  # This appears to work for HomeBrew vim on macOS despite being undocumented afaics
+  # Also, has('clipboard_working') is false there, even though things work
+  if has('clipboard')
+    autocmd FocusGained * {
+      @" = @*
+    }
+    autocmd FocusLost * {
+      @* = @"
+    }
+  endif
 augroup END
