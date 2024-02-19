@@ -105,6 +105,12 @@ inoremap <S-Tab> <C-R>=HalfYakUntab()<CR>
 # Use a group so we can delete all and reload
 augroup HalfYakAuGroup
   autocmd!
+  # Make read only files non modifiable
+  autocmd BufReadPost * ++nested {
+    if &readonly
+      setlocal nomodifiable
+    endif
+  }
   # Automatically reload vimrc on change
   autocmd BufWritePost vimrc {
     const scriptfile = expand('<sfile>:p')
