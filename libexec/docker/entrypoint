@@ -15,6 +15,7 @@ apk add ripgrep
 apk add sqlite
 apk add sudo
 apk add uuidgen
+apk add vim
 apk add zsh
 
 if [ -n "${HALFYAK_USERNAME}" ]

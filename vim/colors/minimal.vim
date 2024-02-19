@@ -15,6 +15,7 @@ highlight Comment ctermfg=13
 highlight Constant ctermfg=3
 highlight Directory ctermfg=4
 highlight Identifier ctermfg=9
+highlight LineNr cterm=none ctermfg=11
 highlight Preproc ctermfg=5
 highlight Removed ctermfg=1
 highlight Special ctermfg=2
