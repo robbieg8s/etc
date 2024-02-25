@@ -1,0 +1,155 @@
+#!/usr/bin/osascript -lJavaScript
+// A utility for access the macOS pasteboard from scripts
+// This improves on pbcopy and pbpaste by providing more precise type handling
+
+function run(argv) {
+  ObjC.import('AppKit');
+  ObjC.import('stdlib');
+
+  const error = (message) => {
+    console.log(message);
+    $.exit(1);
+  };
+
+  const usage = (message) => {
+    if (message) {
+      console.log(message);
+    }
+    [ 'Usage:'
+    , '  pbutil -h | --help | help'
+    , '     Show this usage'
+    , '  pbutil known-types'
+    , '     Show list of known types from NSPasteboardType documentation.'
+    , '  pbutil list'
+    , '     Show summary of all pasteboard contents.'
+    , '  pbutil read [ type [ index ] ]'
+    , '     Read raw bytes for type (default public.utf8-plain-text) content at index (default 0) and write to stdout.'
+    , '  pbutil write [ type ]'
+    , '     Clear the pasteboard and write raw bytes from stdin to a new item at index 0.'
+    , ''
+    , '     Where a type is required, a string containing any . is passed literally, otherwise public. is prepended.'
+    , '     This provides simple aliasing for the common cases, notably html. The default is public.utf8-plain-text.'
+    ].forEach(message => console.log(message));
+    $.exit(message ? 1 : 0);
+  };
+  // Parse type defaulting as per help text
+  const parseType = (typeArg) =>
+    typeArg
+      ? (typeArg.includes('.') ? typeArg : ('public.' + typeArg))
+      : 'public.utf8-plain-text';
+
+  const [ command, ...commandArgs ] = argv;
+  if (!command) {
+    usage('argument is required');
+  } else if (['-h', '--help', 'help'].includes(command)) {
+    usage();
+  } else if ('known-types' === command) {
+    // NSPasteboardTypeCollaborationMetadata appears in the docs, but does not resolve on my macOS 14.2.1 (23C71)
+    return [ $.NSPasteboardTypeURL
+    , $.NSPasteboardTypeColor
+    , $.NSPasteboardTypeFileURL
+    , $.NSPasteboardTypeFont
+    , $.NSPasteboardTypeHTML
+    , $.NSPasteboardTypeMultipleTextSelection
+    , $.NSPasteboardTypePDF
+    , $.NSPasteboardTypePNG
+    , $.NSPasteboardTypeRTF
+    , $.NSPasteboardTypeRTFD
+    , $.NSPasteboardTypeRuler
+    , $.NSPasteboardTypeSound
+    , $.NSPasteboardTypeString
+    , $.NSPasteboardTypeTabularText
+    , $.NSPasteboardTypeTextFinderOptions
+    , $.NSPasteboardTypeTIFF
+    ].map(pasteboardType => pasteboardType.js).sort().join('\n');
+  } else if ('list' === command) {
+    if (0 != commandArgs.length) {
+      usage('show command does not take arguments');
+    } else {
+      const pasteboardItems = $.NSPasteboard.generalPasteboard.pasteboardItems;
+      if (!pasteboardItems) {
+        error('No pasteboard items found');
+      } else {
+        const describe = (pasteboardItem, pasteboardType) => {
+          const asString = pasteboardItem.stringForType(pasteboardType);
+          // We need .js here to unbox the nil from NSPasteboardItem.stringForType if there is no string value.
+          if (asString.js) {
+            return asString.js;
+          } else {
+            const asData = pasteboardItem.dataForType(pasteboardType);
+            // I'm don't know if this .js helps as above, as i don't know how to provoke failure
+            // for NSPasteboardItem.dataForType.
+            if (asData.js) {
+              return `[No string available, ${asData.length} bytes of data]`;
+            } else {
+              return '[No data available]';
+            }
+          }
+        };
+        return pasteboardItems.js.flatMap((pasteboardItem, index) =>
+          pasteboardItem.types.js.map(pasteboardType =>
+            `${index}: ${pasteboardType.js}: ${describe(pasteboardItem, pasteboardType)}`
+          )
+        ).join('\n');
+      }
+    }
+  } else if ('read' === command) {
+    const [ readTypeArg, readIndexArg, ...empty ] = commandArgs;
+    if (0 != empty.length) {
+      usage('read command takes at most two (type index) arguments');
+    } else {
+      const parseIndex = (indexArg) => {
+        if (!indexArg) {
+          // Omitted arg defaults to 0
+          return 0;
+        } else {
+          const index = parseInt(indexArg, 10);
+          if ((index.toString() != indexArg) || (index < 0)) {
+            error(`Cannot parse '${indexArg}' as non-negative integer index`);
+          } else {
+            return index;
+          }
+        }
+      };
+      const readType = parseType(readTypeArg);
+      const readIndex = parseIndex(readIndexArg);
+      const pasteboard = $.NSPasteboard.generalPasteboard;
+      const pasteboardItem = pasteboard.pasteboardItems.objectAtIndex(readIndex);
+      const pasteboardItemData = pasteboardItem.dataForType(readType);
+      // We can't just return a string here, because it gets a newline appended
+      const stdoutHandle = $.NSFileHandle.fileHandleWithStandardOutput;
+      const writeError = $();
+      if (!stdoutHandle.writeDataError(pasteboardItemData, writeError)) {
+        error(`Cannot write stdout: ${writeError.code}: ${writeError.localizedDescription.js}`);
+      }
+    }
+  } else if ('write' === command) {
+    const [ writeTypeArg, ...empty ] = commandArgs;
+    if (0 != empty.length) {
+      usage('write command takes at most one (type) argument');
+    } else {
+      const writeType = parseType(writeTypeArg);
+      const stdinHandle = $.NSFileHandle.fileHandleWithStandardInput;
+      const readError = $();
+      const stdinData = stdinHandle.readDataToEndOfFileAndReturnError(readError);
+      if (!stdinData) {
+        error(`Cannot read stdin: ${readError.code}: ${readError.localizedDescription.js}`);
+      } else {
+        const pasteboardItem = $.NSPasteboardItem.alloc.init;
+        if (!pasteboardItem.setDataForType(stdinData, writeType)) {
+          error(`Could not set pasteboard '${writeType}' content`);
+        } else {
+          const pasteboard = $.NSPasteboard.generalPasteboard;
+          pasteboard.clearContents;
+          if (!pasteboard.writeObjects($.NSArray.arrayWithObject(pasteboardItem))) {
+            error('Could not writeObjects to pasteboard');
+          } else {
+            console.log(`Wrote ${stdinData.length} bytes of data as type '${writeType}'`);
+          }
+        }
+      }
+    }
+  } else {
+    usage(`unknown command: '${command}'`);
+  }
+}
