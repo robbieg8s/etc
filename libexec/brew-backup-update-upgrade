@@ -31,3 +31,21 @@ $(cat ${output})
 END_MAIL
   fi
 } =(true)
+# Notify if we have installed formulae that were installed as dependencies and are not dependencies of another installed formula or cask
+() {
+  output="${1:?}"
+  brew leaves --installed-as-dependency > "${output}"
+  if [[ -s "${output}" ]]
+  then
+    leaf_count="$(awk 'END {print NR}' "${output}")"
+    sendmail -i "${USER}"<<END_MAIL
+Subject: Brew detritus - at least ${leaf_count} stale formulae
+
+$(cat ${output})
+
+:; brew leaves --installed-as-dependency | xargs brew uninstall
+
+You may need to iterate the above.
+END_MAIL
+  fi
+} =(true)
