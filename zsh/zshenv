@@ -28,6 +28,8 @@ path=(
   # Note these are in this order to simplify the platform specific insertions, i don't expect
   # to use overrides / shadowing, it's just organisational
   "${HOME}"/bin{,/"$(uname -s)"}
+  # asdf shims
+  "${HOME}"/.asdf/shims
   # Standard UNIX locations - this matches the alpine default
   {/usr{/local,},}/{sbin,bin}
 )
