@@ -1,0 +1,13 @@
+#!/bin/sh
+
+set -e
+
+if [ $# -ge 1 ]
+then
+    set -- grep --max-count=1 "$1"'$'
+else
+    set -- head -1
+fi
+
+filename="$(ls -t "${HOME}"/Desktop |  sed -ne '/^Screenshot/p' | "$@")"
+[[ -n "${filename}" ]] && printf '%s/Desktop/%s' "${HOME}" "${filename}"
