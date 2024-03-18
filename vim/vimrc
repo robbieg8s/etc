@@ -3,7 +3,8 @@ vim9script
 # Do basic keybinds early, so that if something goes wrong, i can edit files competently
 
 map <C-X> <Esc>
-map! <C-X> <Esc>
+# This must be imap not map! because in command mode we want C-X for set cedit below
+imap <C-X> <Esc>
 
 nmap <Tab> >>
 nmap <S-Tab> <<
