@@ -1,0 +1,8 @@
+#!/bin/zsh -f
+
+set -e
+
+for file in "$@"
+do
+    mv -v "${file}" "${file}".hide
+done

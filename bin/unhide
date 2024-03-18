@@ -1,0 +1,14 @@
+#!/bin/zsh -f
+
+set -e
+
+log() {
+    printf '%s\n' "$@" 1>&2
+}
+
+for file in "$@"
+do
+    unhidden="${file%.hide}"
+    [[ "${file}" == "${unhidden}".hide ]] || { log "Cannot unhide '${file}', not a .hide" ; continue ; }
+    mv -v "${file}" "${unhidden}"
+done
