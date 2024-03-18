@@ -1,0 +1,23 @@
+#!/bin/zsh -f
+
+set -e
+
+# Configured as Profiles/Advanced/Semantic History -> Run command...,
+# $HOME/bin/Darwin/iterm-click \1
+file="${1:?}"
+# Empirically, \1 arrives as an absolute path and script runs in /, but we assume only that
+# it is correct relative to our directory
+dir="${file:A:h}"
+until [[ "${dir}" -ef / ]]
+do
+    [[ -e "${dir}/${dir:t}.sln" ]] && {
+        # Looks like a rider project
+        exec open -nb com.jetbrains.rider --args "${file}"
+    }
+    dir="${dir:h}"
+done
+
+# Expect to find hammerspoon-alert alongside this script
+# This should really use PATH, but i want to keep -f in the #!,
+# and it's hard to set a PATH for iterm which invokes this.
+"${ZSH_ARGZERO:h}"/hammerspoon-alert "Don't know how to open .../${file:t}"
