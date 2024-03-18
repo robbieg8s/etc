@@ -1,6 +1,11 @@
 #!/bin/sh
 # Analyze a git checkout for fixups and offer solutions
 
+# Feature backlog:
+# - Make a branch count as stale if it's merged to current, to make it easier to discard
+#   branches that have become tags, or temp branches that are merged into other temp
+#   branches.
+
 # This fetches, prunes, and gcs the current git repo, sets the remote HEAD if necessary,
 # and then for each branch,
 # - warns if it is ahead of upstream, and if not
