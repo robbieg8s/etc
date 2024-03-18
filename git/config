@@ -23,12 +23,12 @@
   diff-words = diff --word-diff-regex='[a-zA-Z]+|[^[:space:]]'
   discard = checkout --
   initial-commit = commit --allow-empty --message='Initial commit'
-  ls-added = diff --name-only --diff-filter=A
-  ls-deleted = diff --name-only --diff-filter=D
-  ls-modified = diff --name-only --diff-filter=M
-  ls-staged = diff --name-only --staged
-  ls-unknown = diff --name-only --diff-filter=X
-  ls-unmerged = diff --name-only --diff-filter=U
+  ls-added = diff --name-only --relative --diff-filter=A
+  ls-deleted = diff --name-only --relative --diff-filter=D
+  ls-modified = diff --name-only --relative --diff-filter=M
+  ls-staged = diff --name-only --relative --staged
+  ls-unknown = diff --name-only --relative --diff-filter=X
+  ls-unmerged = diff --name-only --relative --diff-filter=U
   recent = log --format='%h%>(15)%cd %<(22)%an %s' --date=relative --max-count 25
   stash-unstaged = stash save --keep-index
   stash-unstaged-untracked = stash save --keep-index --include-untracked
