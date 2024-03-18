@@ -75,6 +75,7 @@ function audioBatcher:selectOutput()
         hs.audiodevice.allOutputDevices(),
         "External Headphones",
         "Creative Stage Air V2",
+        "DELL U2723QE",
         "Beats Flex",
         "BuiltInSpeakerDevice")
     if (output ~= hs.audiodevice.defaultOutputDevice()) then
