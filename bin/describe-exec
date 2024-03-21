@@ -1,0 +1,23 @@
+#!/bin/zsh -ef
+
+# Unambigously describe how we were exec'd
+#
+# Feature backlog:
+# - If HALFYAK_DESCRIBE_EXEC_FORWARD is set in environment, exec that with $@
+#   when we are done.  If not, but if [[ $0:A != $0 ]], then behave as if
+#   HALFYAK_DESCRIBE_EXEC_FORWARD was set to whence -a "${0##*/}" | sed -ne 2p
+# - If HALFYAK_DESCRIBE_EXEC_STDIN is set in environment, capture stdin to that
+#   file. If also ..._FORWARD, use tee to capture and forward.
+# - If HALFYAK_DESCRIBE_EXEC_STDOUT is set in environment, cat that to stdout.
+#   If also ..._FORWARD, instead use tee to capture the stdout from the exec'd process.
+
+exec 1>&2
+
+printf 'PWD=%s\n' "${(qqqq)PWD}"
+printf '$#=%s\n' "${(qqqq)#}"
+printf '$0=%s\n' "${(qqqq)0}"
+arg_index=0
+for arg in "$@"
+do
+  printf '$%s=%s\n' "$((++arg_index))" "${(qqqq)arg}"
+done
