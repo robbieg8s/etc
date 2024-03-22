@@ -21,6 +21,11 @@ dlf() {
   recent-download "$@"
 }
 
+# useful in commit review workflows
+gbh() {
+  git browse HEAD
+}
+
 # Shell history in sqlite
 # These are for interactive use, and so fail if teh relevant variables aren't set
 
