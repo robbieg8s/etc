@@ -4,7 +4,8 @@
 # Feature backlog:
 # - Make a branch count as stale if it's merged to current, to make it easier to discard
 #   branches that have become tags, or temp branches that are merged into other temp
-#   branches.
+#   branches. If you do this, you need to be careful about ancestors you want to keep,
+#   so this should probably be optional as an offered resolution command.
 
 # This fetches, prunes, and gcs the current git repo, sets the remote HEAD if necessary,
 # and then for each branch,
