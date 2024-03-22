@@ -223,22 +223,30 @@ require("hs.ipc")
 function normalizeWindow(screen, window)
   local frame = screen:frame()
   -- A few windows i like in particular positions
-  local bundleId = window:application():bundleID()
-  if ("com.googlecode.iterm2" == bundleId) then
-    -- iTerm
-    -- This is 132 columns of Menlo 15, my current terminal font, plus the iTerm2 padding
-    -- In priciple i can query the font geometry using osascript:
-    --   ObjC.import('AppKit');
-    --   $.NSFont.fontWithNameSize('Menlo',15.0). maximumAdvancement.width;
-    -- but i'd still have to know the padding. Probably i should just use the iTerm API directly,
-    -- but i've not yet invested in understanding that, and this is convenient.
-    frame.w = 1213
-  elseif ("com.tinyspeck.slackmacgap" == bundleId) then
-    -- Slack
+  local right1280 = function()
     -- Fixed width, pushed to the right edge
-    local slackWidth = 1280
-    frame.x = frame.x2 - slackWidth
-    frame.w = slackWidth
+    local width = 1280
+    frame.x = frame.x2 - width
+    frame.w = width
+  end
+  local handlers = {
+    ["com.googlecode.iterm2"] = function()
+      -- iTerm
+      -- This is 132 columns of Menlo 15, my current terminal font, plus the iTerm2 padding
+      -- In priciple i can query the font geometry using osascript:
+      --   ObjC.import('AppKit');
+      --   $.NSFont.fontWithNameSize('Menlo',15.0). maximumAdvancement.width;
+      -- but i'd still have to know the padding. Probably i should just use the iTerm API directly,
+      -- but i've not yet invested in understanding that, and this is convenient.
+      frame.w = 1213
+    end,
+    ["com.tinyspeck.slackmacgap"] = right1280,
+    ["com.apple.MobileSMS"] = right1280
+  }
+  local bundleId = window:application():bundleID()
+  local handler = handlers[bundleId]
+  if handler ~= nil then
+    handler()
   -- else for everything else, just maximize - leave frame unchanged
   end
   window:setFrame(frame)
