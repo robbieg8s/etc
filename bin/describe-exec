@@ -3,6 +3,7 @@
 # Unambigously describe how we were exec'd
 # - If HALFYAK_DESCRIBE_EXEC_STDERR is set in environment, write describe output there,
 #   rather than stderr.
+# - If HALFYAK_DESCRIBE_EXEC_ENV is set in environment, write environment there.
 
 # Feature backlog:
 # - If HALFYAK_DESCRIBE_EXEC_FORWARD is set in environment, exec that with $@
@@ -16,6 +17,8 @@
 #   from the wrapped process also.
 
 [[ -n "${HALFYAK_DESCRIBE_EXEC_STDERR}" ]] && exec 2>"${HALFYAK_DESCRIBE_EXEC_STDERR}"
+[[ -n "${HALFYAK_DESCRIBE_EXEC_ENV}" ]] && env >"${HALFYAK_DESCRIBE_EXEC_ENV}"
+pstree $$ >>"${HALFYAK_DESCRIBE_EXEC_ENV}"
 
 exec 1>&2
 
