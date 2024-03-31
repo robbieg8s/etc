@@ -21,9 +21,19 @@ dlf() {
   recent-download "$@"
 }
 
+## Git shortcuts
 # useful in commit review workflows
 gbh() {
-  git browse HEAD
+  git browse HEAD "$@"
+}
+gc() {
+  git checkout "$@"
+}
+gp() {
+  git pull "$@"
+}
+gq() {
+  git push "$@"
 }
 
 # Shell history in sqlite
