@@ -27,7 +27,7 @@
   ls-deleted = diff --name-only --relative --diff-filter=D
   ls-modified = diff --name-only --relative --diff-filter=M
   ls-staged = diff --name-only --relative --staged
-  ls-unknown = diff --name-only --relative --diff-filter=X
+  ls-unknown = ls-files --exclude-standard --others
   ls-unmerged = diff --name-only --relative --diff-filter=U
   recent = log --format='%h%>(15)%cd %<(22)%an %s' --date=relative --max-count 25
   stash-unstaged = stash save --keep-index
