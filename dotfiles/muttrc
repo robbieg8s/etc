@@ -1,0 +1,4 @@
+set folder=~/cloud/mail
+set help=no
+
+bind pager u exit
