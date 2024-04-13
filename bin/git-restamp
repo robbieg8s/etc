@@ -1,0 +1,29 @@
+#!/bin/zsh -ef
+# Set the filesystem modification time for all files
+
+# I thought a bit about making the xargs call back to this script with a modified argument,
+# but ideally it'd be a modified argv0 and that's hard to arrange via xargs.
+
+# The if to "do nothing if times are correct" is design to stop things that fire on file
+# watchers from going, not as an optimization.
+
+# You can definitely get a speed up here passing -n $size -P $procs to xargs, but it's
+# hard to efficiently guess a good value for $size. Expose it as "$@" so i can experiment.
+git ls-files -z | xargs -0 -r "$@" zsh -cef '
+zmodload -F zsh/datetime b:strftime
+zmodload -F zsh/stat b:zstat
+while [[ $# -ne 0 ]]
+do
+  if git diff --exit-code --quiet "$1"
+  then
+    mtime="$(zstat -L +mtime $1)"
+    commitTime="$(git log -n1 --format="%ct" "$1")"
+    if [[ "${mtime}" -ne "${commitTime}" ]]
+    then
+      touchTime="$(TZ=UTC strftime "%FT%TZ" "${commitTime}")"
+      touch -h -d "${touchTime}" "$1"
+    fi
+  fi
+  shift
+done
+' ''
