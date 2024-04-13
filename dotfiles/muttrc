@@ -1,4 +1,8 @@
+# This is convenient for the local mailbox which is purely TODO, but might
+# need folder specific hooks if i experiment with actual mail via mutt also.
+set delete=yes
 set folder=~/cloud/mail
 set help=no
 
+# This is the "up" in gmail, and i have pretty strong muscle memory for it.
 bind pager u exit
