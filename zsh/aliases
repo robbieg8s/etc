@@ -29,12 +29,15 @@ gbh() {
 gc() {
   git checkout "$@"
 }
+compdef _git gc=git-checkout
 gp() {
   git pull "$@"
 }
+compdef _git gp=git-pull
 gq() {
   git push "$@"
 }
+compdef _git gq=git-push
 
 # Shell history in sqlite
 # These are for interactive use, and so fail if teh relevant variables aren't set

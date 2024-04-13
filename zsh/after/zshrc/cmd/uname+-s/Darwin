@@ -6,3 +6,28 @@
 # Tell ls to use color when output is a tty
 # Using this on MacOS only, it doesn't work in docker alpine at least
 export CLICOLOR=yes
+
+## FPATH
+#
+# The default fpath on macOS with a Homebrew zsh, as reported by
+# zsh -fc 'print -l $fpath'
+# puts /opt/homebrew/share/zsh/site-functions ahead of /opt/homebrew/Cellar/zsh/5.9/share/zsh/functions and
+# both have _git, and the former is less full featured, and this is the only overlap as of this writing, so
+# just switch them around. Also drop the default /usr/local/share/zsh/site-functions which has nothing in it.
+#
+# If this ends up getting complicated, i'll add a directory of mine ahead of them all and symlink to promote
+# specific scripts - that's easier the new way around anyway, since the later path is more stable.  Another
+# option would be to remove the bad completions from the Homebrew git, but the formula has no option for that
+# (by design - https://github.com/Homebrew/homebrew-core/issues/31510), and modifying the install locally will
+# likely cause problems. I don't want to stick to the Apple /usr/bin/git because in security scenarios i want
+# to update fast.
+#
+# To work for both homebrew zsh and the macOS shipped zsh, we find the path to the built in functions by
+# assuming that it will be alongside compinit. This is macOS specific because the apk zsh has a totally
+# different fpath setup where the functions are all spread out. It's fine to include the homebrew shared ones
+# in either case - missing directories are handled gracefully, and there's a plausible scenario where i want to
+# use /bin/zsh for a protacted period if the homebrew zsh was faulty for example.
+fpath=(
+  "${functions_source[compinit]%/compinit}"
+  /opt/homebrew/share/zsh/site-functions
+)
