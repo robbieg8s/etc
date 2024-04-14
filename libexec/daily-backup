@@ -25,5 +25,8 @@ else
     > "${BACKUP_DIR}/HALFYAK_ETC_SQLITE_HISTORY_DB.dump.bz2"
   [[ 0 -eq "${#pipestatus:#0}" ]]
 
+  tar -ca -f "${BACKUP_DIR}/dot-config.tar.bz2" -C "${HOME}/.config" \
+    1Password karabiner
+
   log "$(du -sh "${BACKUP_DIR}")"
 fi
