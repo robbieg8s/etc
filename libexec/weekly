@@ -7,7 +7,7 @@ HALFYAK_ETC_LIBEXEC="${$(print -P '%x'):A:h}"
 printf '%s: Running weekly tasks\n' "$(date)"
 
 # Check for warehoused change
-"${HALFYAK_ETC_LIBEXEC}/git-hygiene" ~/etc ~/src/
+"${HALFYAK_ETC_LIBEXEC}/git-hygiene" ~/etc ~/etc/private ~/src/
 
 # Brew maintenance
 "${HALFYAK_ETC_LIBEXEC}/brew-backup-update-upgrade"
