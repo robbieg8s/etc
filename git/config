@@ -21,7 +21,6 @@
 [alias]
   commit-update = commit --amend --reset-author
   diff-words = diff --word-diff-regex='[a-zA-Z]+|[^[:space:]]'
-  discard = checkout --
   initial-commit = commit --allow-empty --message='Initial commit'
   ls-added = diff --name-only --relative --diff-filter=A
   ls-deleted = diff --name-only --relative --diff-filter=D
