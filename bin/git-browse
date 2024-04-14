@@ -125,24 +125,36 @@ provider_url() {
 
 format_and_open() {
   # If you add support for BTF git servers, mirroring should be handled here, e.g. by inspecting pushurl
-  local origin host slug
+  local origin protocol host slug
   origin="$(git config remote.origin.url)"
   local precolon="${origin%%:*}"
   case "${precolon}" in
     ssh|git|http|https|ftp|ftps)
       # It's a protocol, parse the url
       # See git help clone, GIT URLS, for this list of protocols
+      protocol="${precolon}"
       local user_host_port_path_to_repo="${origin#*://}"
       host="${${${user_host_port_path_to_repo%%/*}%:*}#*@}"
       slug="${${user_host_port_path_to_repo#*/}%.git}"
       ;;
     *)
-      # This is the alternative scp-like syntax
+      # This is the alternative scp-like syntax for ssh
       # In this case, the precolon part looks like [user@]host
+      protocol="ssh"
       host="${precolon#*@}"
       slug="${${origin#*:}%.git}"
       ;;
   esac
+  set -x
+  if [[ "${protocol}" == ssh ]]
+  then
+    # For ssh (either ssh: or scp-like), let ssh parse it's config and report the host name,
+    # because people use ssh aliases to switch between identities on hosted platforms.
+    host="$(
+      ssh -G "${host}" | awk '/^hostname / { print $2 }'
+      [[ 0 -eq "${#pipestatus:#0}" ]]
+    )"
+  fi
   # Some light validation just things went wrong
   # See RFC1035 https://www.ietf.org/rfc/rfc1035.txt
   [[ "${host}" =~ ^[a-zA-Z0-9.-]*$ ]] || error "Parsed host '${host}' does not look like a DNS name"
