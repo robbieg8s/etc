@@ -1,15 +1,28 @@
 #!/bin/zsh -ef
-# Set the filesystem modification time for all files
+# Set the filesystem modification time for files known to git and currently unchanged to
+# the time of their last commit in git. Directories are unchanged - this is a bug, i think
+# i woudl like to give them the timestamp of their most recent child, possibly transitively.
+
+# The arguments up to an optional -- separator are passed as file... arguments to the list
+# of files inspected, which defaults to empty, that is, files parented at the current directory.
+# The arguments after the -- separator are passed to the xargs for processing the files, you
+# can usefully pass -n $size -P $procs here to improve performance, but it is  hard for this
+# script to efficiently guess a good value for $size.
 
 # I thought a bit about making the xargs call back to this script with a modified argument,
 # but ideally it'd be a modified argv0 and that's hard to arrange via xargs.
 
-# The if to "do nothing if times are correct" is design to stop things that fire on file
-# watchers from going, not as an optimization.
+# The if to "do nothing if times are correct" is designed to avoiding triggering things that
+# watching the filesystem, and not as an optimization.
+
+# The touch invocation is almost POSIX, as this works on macOS, busybox, and coreutils versions
+# of touch. The `-h` is not POSIX, but it's supported and equivalent on each target.
 
 # You can definitely get a speed up here passing -n $size -P $procs to xargs, but it's
 # hard to efficiently guess a good value for $size. Expose it as "$@" so i can experiment.
-git ls-files -z | xargs -0 -r "$@" zsh -cef '
+
+separatorIndex="${@[(i)--]}"
+git ls-files -z -- "$@[1,separatorIndex-1]" | xargs -0 -r "$@[separatorIndex+1,$#]" zsh -cef '
 zmodload -F zsh/datetime b:strftime
 zmodload -F zsh/stat b:zstat
 while [[ $# -ne 0 ]]
@@ -20,8 +33,8 @@ do
     commitTime="$(git log -n1 --format="%ct" "$1")"
     if [[ "${mtime}" -ne "${commitTime}" ]]
     then
-      touchTime="$(TZ=UTC strftime "%FT%TZ" "${commitTime}")"
-      touch -h -d "${touchTime}" "$1"
+      touchTime="$(TZ=UTC strftime "%Y%m%d%H%M.%S" "${commitTime}")"
+      TZ=UTC touch -h -t "${touchTime}" "$1"
     fi
   fi
   shift
