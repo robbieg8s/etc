@@ -145,7 +145,6 @@ format_and_open() {
       slug="${${origin#*:}%.git}"
       ;;
   esac
-  set -x
   if [[ "${protocol}" == ssh ]]
   then
     # For ssh (either ssh: or scp-like), let ssh parse it's config and report the host name,
