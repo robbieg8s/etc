@@ -58,9 +58,9 @@ else
 
   for subdir in "${directory}"/*(/N)
   do
-    envvar="${subdir:t:gs/-/_}"
+    envvar="${subdir:t}"
     # If it looks safe, emit a command to set it in the named dir hash
-    [[ "${envvar}" =~ ^[a-zA-Z0-9_]*$ ]] && { printf 'hash -d "%s"="%s"\n' "${envvar}" "${subdir:A}" ; }
+    [[ "${envvar}" =~ ^[a-zA-Z0-9_.-]*$ ]] && { printf 'hash -d "%s"="%s"\n' "${envvar}" "${subdir:A}" ; }
   done > "${index_file_updated}"
   # Restore the "before directory change" timestamp to our updated file.
   touch -m -r "${index_file_timestamp}" "${index_file_updated}"
