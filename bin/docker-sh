@@ -1,0 +1,6 @@
+#!/bin/sh
+
+IMAGE_ID="${1:?}"
+shift
+
+exec docker run --rm --interactive --tty --entrypoint /bin/sh "$@" "${IMAGE_ID}"

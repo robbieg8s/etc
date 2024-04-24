@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -- $(docker ps --all --quiet)
+
+if [ $# -ne 0 ]
+then
+    echo "Removing $# containers ..."
+    docker rm --force "$@" > /dev/null
+fi
+
+set -- $(docker volume ls --quiet --filter 'dangling=true')
+
+if [ $# -ne 0 ]
+then
+    echo "Removing $# dangling volumes ..."
+    docker volume rm --force "$@" > /dev/null
+fi
+
+docker network prune --force

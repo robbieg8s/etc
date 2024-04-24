@@ -1,0 +1,5 @@
+#!/bin/sh
+
+container=${1:?}
+
+exec docker exec --interactive --tty "${container}" /bin/sh
