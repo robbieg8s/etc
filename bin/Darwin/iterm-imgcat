@@ -1,0 +1,15 @@
+#!/bin/zsh -ef
+
+# See https://iterm2.com/documentation-images.html
+
+if [[ $# -ne 0 ]]
+then
+  for file in "$@"
+  do
+    printf '%s\n\e%s\a\n' \
+      "${file}" \
+      "]1337;File=inline=1;name=$(printf '%s' "${file}" | base64):$(base64 -i "${file}")"
+  done
+else
+  print "\e]1337;File=inline=1:$(base64)\a"
+fi
