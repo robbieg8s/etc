@@ -22,6 +22,13 @@ dlf() {
 }
 
 ## Git shortcuts
+ga() {
+  git add "$@"
+}
+compdef _git ga=git-add
+gb() {
+  git browse "$@"
+}
 # useful in commit review workflows
 gbh() {
   git browse HEAD "$@"
@@ -30,6 +37,18 @@ gc() {
   git checkout "$@"
 }
 compdef _git gc=git-checkout
+gd() {
+  git diff "$@"
+}
+compdef _git gd=git-diff
+gf() {
+  git fetch "$@"
+}
+compdef _git gf=git-fetch
+gl() {
+  git log "$@"
+}
+compdef _git gl=git-log
 gp() {
   git pull "$@"
 }
@@ -38,6 +57,10 @@ gq() {
   git push "$@"
 }
 compdef _git gq=git-push
+gs() {
+  git status "$@"
+}
+compdef _git gs=git-status
 
 # Shell history in sqlite
 # These are for interactive use, and so fail if teh relevant variables aren't set
