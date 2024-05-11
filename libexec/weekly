@@ -9,13 +9,13 @@ printf '%s: Running weekly tasks\n' "$(date)"
 # Check for warehoused change
 "${HALFYAK_ETC_LIBEXEC}/git-hygiene" ~/etc ~/etc/private ~/src/
 
-# Brew maintenance
-"${HALFYAK_ETC_LIBEXEC}/brew-backup-update-upgrade"
-
 # Validate mailto: handler set correctly
 "${HALFYAK_ETC_LIBEXEC}/mailto-handler-check"
 
 # Notify if we have disk images attached
 "${HALFYAK_ETC_LIBEXEC}/attached-disk-image-notify"
+
+# Brew maintenance
+"${HALFYAK_ETC_LIBEXEC}/brew-backup-update-upgrade"
 
 printf '%s: Completed weekly tasks\n' "$(date)"
