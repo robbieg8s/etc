@@ -55,6 +55,12 @@ $(cat ${output})
 :; brew leaves --installed-as-dependency | xargs brew uninstall
 
 You may need to iterate the above.
+
+You should also investigate
+
+:; brew autoremove
+
+as it might do all the work. Update this message if it works.
 END_MAIL
   fi
 } =(true)
