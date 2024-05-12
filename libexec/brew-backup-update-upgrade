@@ -9,6 +9,14 @@ touch "${BREWFILE}"
 cp "${BREWFILE}" "${BREWFILE}.bak"
 rm "${BREWFILE}"
 brew bundle dump --file="${BREWFILE}"
+# The bundle dump does not include information about what was linked, so record
+# this information also. It's not in brew info --json=v2 itself, so peek into
+# Homebrew's system of record in the file system. Since we're doing that anyway,
+# use the Cellar not `brew list` or `brew info`, since that's much faster. I'm
+# not sure what format i want this in yet - so names will do for now
+UNLINKED="${HOME}/cloud/etc/homebrew/unlinked.txt"
+join -v1 =(ls /opt/homebrew/Cellar) =(ls /opt/homebrew/var/homebrew/linked) > "${UNLINKED}"
+
 # Update and Upgrade Brew
 brew update
 # Don't auto upgrade casks
@@ -31,7 +39,8 @@ $(cat ${output})
 END_MAIL
   fi
 } =(true)
-# Notify if we have installed formulae that were installed as dependencies and are not dependencies of another installed formula or cask
+# Notify if we have installed formulae that were installed as dependencies and
+# are not dependencies of another installed formula or cask
 () {
   output="${1:?}"
   brew leaves --installed-as-dependency > "${output}"
