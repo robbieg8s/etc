@@ -240,6 +240,13 @@ function normalizeWindow(screen, window)
       -- but i've not yet invested in understanding that, and this is convenient.
       frame.w = 1213
     end,
+    ["com.1password.1password"] = function()
+      local width = 1024
+      local height = 640
+      frame.x = frame.x2 - width
+      frame.w = width
+      frame.h = height
+    end,
     ["com.tinyspeck.slackmacgap"] = right1280,
     ["com.apple.MobileSMS"] = right1280
   }
