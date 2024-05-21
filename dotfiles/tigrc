@@ -1,0 +1,6 @@
+# Open the appropriate heavy editor on file
+# It would be nice to suppress the a/ and b/ on diffs using --no-prefix,
+# so %(file) was the file system file, but this appears to break tig's
+# stage hunk command, so %(file) here the a/ on it, which iterm-click handles.
+# At some point we should pass through line here from diff hunks
+bind stage E @iterm-click "%(file)"

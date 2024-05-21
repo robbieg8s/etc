@@ -1,23 +1,47 @@
 #!/bin/zsh -f
 
+# This script should really be called "open C# files in Rider" because i'm using it from
+# other places (e.g. .tigrc, not just iterm-click), but the intent is that it becomes
+# "open file in the right heavy editor".
+#
+# At some point we should have arguments for line numbers also
+
 set -e
 
 # Configured as Profiles/Advanced/Semantic History -> Run command...,
 # $HOME/bin/Darwin/iterm-click \1
 file="${1:?}"
-# Empirically, \1 arrives as an absolute path and script runs in /, but we assume only that
-# it is correct relative to our directory
-dir="${file:A:h}"
-until [[ "${dir}" -ef / ]]
-do
-    [[ -e "${dir}/${dir:t}.sln" ]] && {
-        # Looks like a rider project
-        exec open -nb com.jetbrains.rider --args "${file}"
-    }
-    dir="${dir:h}"
-done
 
+# Tig (at least) passes the "a/" prefix in a diff view through, so remove these heuristically
+# Possibly this should also use :A:h ...
+[[ ! -e "${file}" ]] && [[ -e "${file#a/}" ]] && { file="${file#a/}" ; }
+[[ ! -e "${file}" ]] && [[ -e "${file#b/}" ]] && { file="${file#b/}" ; }
+
+if [[ -e "${file}" ]]
+then
+  # Empirically,
+  # - for iterm click, \1 arrives as an absolute path and script runs in /
+  # - for tig, \1 arrives as an offset and script runs in cwd
+  # but we assume only that it is correct relative to our directory
+  dir="${file:A:h}"
+  until [[ "${dir}" -ef / ]]
+  do
+      [[ -e "${dir}/${dir:t}.sln" ]] && {
+          # Looks like a rider project
+          exec open -nb com.jetbrains.rider --args "${file}"
+      }
+      dir="${dir:h}"
+  done
+fi
+# else, for now, don't try to open non-existent files
+
+if [[ "${file}" = */* ]]
+then
+  abbreviated="${file:h1}/.../${file:t}"
+else
+  abbreviated="${file}"
+fi
 # Expect to find hammerspoon-alert alongside this script
 # This should really use PATH, but i want to keep -f in the #!,
 # and it's hard to set a PATH for iterm which invokes this.
-"${ZSH_ARGZERO:h}"/hammerspoon-alert "Don't know how to open .../${file:t}"
+"${ZSH_ARGZERO:h}"/hammerspoon-alert "Don't know how to open ${abbreviated}"
