@@ -229,6 +229,14 @@ function normalizeWindow(screen, window)
     frame.x = frame.x2 - width
     frame.w = width
   end
+  local smallerUpperRight = function()
+    -- Fixed width and height, pushed to the upper right, smaller than the whole laptop screen
+    local width = 1024
+    local height = 640
+    frame.x = frame.x2 - width
+    frame.w = width
+    frame.h = height
+  end
   local handlers = {
     ["com.googlecode.iterm2"] = function()
       -- iTerm
@@ -240,15 +248,11 @@ function normalizeWindow(screen, window)
       -- but i've not yet invested in understanding that, and this is convenient.
       frame.w = 1213
     end,
-    ["com.1password.1password"] = function()
-      local width = 1024
-      local height = 640
-      frame.x = frame.x2 - width
-      frame.w = width
-      frame.h = height
-    end,
+    ["com.1password.1password"] = smallerUpperRight,
+    ["com.apple.MobileSMS"] = right1280,
     ["com.tinyspeck.slackmacgap"] = right1280,
-    ["com.apple.MobileSMS"] = right1280
+    ["com.unity3d.unityhub"] = smallerUpperRight,
+    ["org.whispersystems.signal-desktop"] = smallerUpperRight
   }
   local bundleId = window:application():bundleID()
   local handler = handlers[bundleId]
