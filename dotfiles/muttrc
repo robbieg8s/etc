@@ -1,7 +1,14 @@
-# This is convenient for the local mailbox which is purely TODO, but might
-# need folder specific hooks if i experiment with actual mail via mutt also.
-set delete=yes
+# This must be early, as it can impact other settings. Note it is in a folder
+# which is backed up via cloud sync.
 set folder=~/cloud/mail
+
+# The location of the mailbox where mail goes after spooling
+set mbox=+inbox
+
+# This is convenient for the local mailbox which is purely a task list, but
+# might need folder specific hooks if i experiment with actual mail via mutt
+# also.
+set delete=yes
 set help=no
 
 # This is the "up" in gmail, and i have pretty strong muscle memory for it.
