@@ -18,9 +18,10 @@
       xpath: `.//a[contains(substring-before(substring-after(./@href, "https://"), "/"), "${domain}") and normalize-space(string(.))="${linkText}"]`
     }));
     const found = [
-      // Bitbucket has a bit of an array of link texts in use
+      // Bitbucket has a bit of an array of link texts in use ...
       ...makeMatchers('bitbucket.org', 'View this pull request', 'View commit', 'View this commit', 'View all commits'),
-      ...makeMatchers('atlassian.net', 'View page', 'View blog post')
+      // As does Confluence ...
+      ...makeMatchers('atlassian.net', 'View page', 'View blog post', 'View full blog')
     ].some(({ domain, xpath }) => {
       const xpathResults = document.evaluate(xpath, document);
       let node = null;
