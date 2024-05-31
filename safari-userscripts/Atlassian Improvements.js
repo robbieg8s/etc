@@ -20,8 +20,7 @@
     for (let i = 0; i < upgradeButtons.snapshotLength; ++i) {
       const upgradeButton = upgradeButtons.snapshotItem(i);
       if (upgradeButton.style.display != 'none') {
-        console.log('Atlassian Improvements removing upgradeButton:');
-        console.log(upgradeButton);
+        console.log('Atlassian Improvements hiding Upgrade ', upgradeButton);
         upgradeButton.style.display='none';
       }
     }
@@ -46,7 +45,7 @@
           .forEach(addedNode => {
             // Hide the node (vs removal) so we don't break the bell
             addedNode.style.display = 'none';
-            console.log('Atlassian Notification Snooze hiding', addedNode);
+            console.log('Atlassian Improvements hiding Notification ', addedNode);
           });
       });
   }))
