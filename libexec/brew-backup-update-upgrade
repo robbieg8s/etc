@@ -2,6 +2,21 @@
 
 set -ex
 
+retry() {
+  local limit="${1:?}"
+  shift
+  local tries=0
+  until "$@"
+  do
+    : $((++tries))
+    if [[ "${tries}" -ge "${limit}" ]]
+    then
+      printf "Exiting after %s tries\n" "${tries}"
+      false
+    fi
+  done
+}
+
 # Save Brew config
 BREWFILE="${HOME}/cloud/etc/homebrew/Brewfile"
 mkdir -p "${BREWFILE%/*}"
@@ -22,7 +37,7 @@ brew update
 # Don't auto upgrade casks
 # - openjdk8, needed by plantuml, is interactive
 # - you can't pin casks to avoid auto upgrade
-brew upgrade --formula
+retry 3 brew upgrade --formula
 # Notify if casks are out of date
 () {
   output="${1:?}"
