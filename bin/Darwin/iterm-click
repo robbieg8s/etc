@@ -11,6 +11,7 @@ set -e
 # Configured as Profiles/Advanced/Semantic History -> Run command...,
 # $HOME/bin/Darwin/iterm-click \1
 file="${1:?}"
+line=${2+"$2"}
 
 # Tig (at least) passes the "a/" prefix in a diff view through, so remove these heuristically
 # Possibly this should also use :A:h ...
@@ -28,7 +29,11 @@ then
   do
       [[ -e "${dir}/${dir:t}.sln" ]] && {
           # Looks like a rider project
-          exec open -nb com.jetbrains.rider --args "${file}"
+          exec open -nb com.jetbrains.rider --args ${line+--line} ${line+"${line}"} "${file}"
+      }
+      [[ -e "${dir}/.idea" && -e "${dir}/package.json" ]] && {
+          # Looks like a webstorm project
+          exec open -nb com.jetbrains.webstorm --args ${line+--line} ${line+"${line}"} "${file}"
       }
       dir="${dir:h}"
   done

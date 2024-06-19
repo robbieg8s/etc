@@ -3,4 +3,4 @@
 # so %(file) was the file system file, but this appears to break tig's
 # stage hunk command, so %(file) here the a/ on it, which iterm-click handles.
 # At some point we should pass through line here from diff hunks
-bind stage E @iterm-click "%(file)"
+bind generic E @iterm-click "%(file)" "%(lineno)"
