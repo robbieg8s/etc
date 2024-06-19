@@ -65,17 +65,13 @@ END_MAIL
     sendmail -i "${USER}"<<END_MAIL
 Subject: Brew detritus - at least ${leaf_count} stale formulae
 
+Stale formulae:
+
 $(cat ${output})
 
-:; brew leaves --installed-as-dependency | xargs brew uninstall
-
-You may need to iterate the above.
-
-You should also investigate
+Clean up with
 
 :; brew autoremove
-
-as it might do all the work. Update this message if it works.
 END_MAIL
   fi
 } =(true)
