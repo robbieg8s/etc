@@ -38,6 +38,8 @@ brew update
 # - openjdk8, needed by plantuml, is interactive
 # - you can't pin casks to avoid auto upgrade
 retry 3 brew upgrade --formula
+# cleanup - brew does this every 30 days noisily, so do it weekly
+brew cleanup
 # Notify if casks are out of date
 () {
   output="${1:?}"
