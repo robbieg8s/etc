@@ -32,7 +32,11 @@ else
 fi
 
 # Clone and setup as the user (default root), assumes HALFYAK_ETC_GIT set by dockerized-etc
+# The safe.directory setting permits git to clone /mnt/etc.git despite the fact it is owned
+# by another user. This is required since the user inside docker uid will typically not
+# match the user on host uid.
 su "${HALFYAK_USERNAME:-root}"<<END_SETUP
+git config --global --add safe.directory /mnt/etc.git
 git clone "${HALFYAK_ETC_GIT}"
 ~/etc/libexec/setup
 END_SETUP

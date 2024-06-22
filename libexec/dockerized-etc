@@ -11,13 +11,19 @@ error() {
 }
 
 usage() {
-  error "Usage: ${ZSH_ARGZERO} [ -u|--user USERNAME ]" \
-    "  USERNAME: create and run as given USERNAME" \
+  error "Usage: ${ZSH_ARGZERO} [ -u|--user USERNAME ] [ -c|--cwd ]" \
+    "  --user USERNAME: create and run as given USERNAME" \
+    "  --cwd: mount current working directory as /mnt/cwd"
 }
 
 while [ $# -ne 0 ]
 do
   case "${1:?}" in
+    -c|--cwd)
+      HOST_CWD="${PWD}"
+      DOCKER_CWD="/mnt/cwd"
+      shift
+      ;;
     -h|--help)
       usage
       exit 0
@@ -64,4 +70,5 @@ docker run --rm --interactive --tty \
   --volume "${HOST_APK_CACHE}:${DOCKER_APK_CACHE}" \
   --volume "${HOST_ENTRYPOINT}:${DOCKER_ENTRYPOINT}" \
   --volume "${HOST_GIT_REPO}:${DOCKER_GIT_REPO}" \
+  ${HOST_CWD+--volume} ${HOST_CWD+"${HOST_CWD}:${DOCKER_CWD}"} \
   alpine:latest
