@@ -11,9 +11,10 @@ error() {
 }
 
 usage() {
-  error "Usage: ${ZSH_ARGZERO} [ -u|--user USERNAME ] [ -c|--cwd ]" \
+  error "Usage: ${ZSH_ARGZERO} [ -u|--user USERNAME ] [ -c|--cwd ] [ -- [ docker-run-option ... ] ]" \
     "  --user USERNAME: create and run as given USERNAME" \
-    "  --cwd: mount current working directory as /mnt/cwd"
+    "  --cwd: mount current working directory as /mnt/cwd" \
+    "  docker-run-option: options passed through to docker run (before the image)"
 }
 
 while [ $# -ne 0 ]
@@ -71,4 +72,5 @@ docker run --rm --interactive --tty \
   --volume "${HOST_ENTRYPOINT}:${DOCKER_ENTRYPOINT}" \
   --volume "${HOST_GIT_REPO}:${DOCKER_GIT_REPO}" \
   ${HOST_CWD+--volume} ${HOST_CWD+"${HOST_CWD}:${DOCKER_CWD}"} \
+  "$@" \
   alpine:latest
