@@ -1,0 +1,53 @@
+#!/bin/zsh -ef
+# Use a branch to reintegrate an unpushable change
+
+log() {
+  local fmt="$1"
+  shift
+  print -u2 -f "${fmt}\n" -- "$@"
+}
+
+error() {
+  log "$@"
+  exit 1
+}
+
+OLD_BRANCH_NAME="$(git symbolic-ref --quiet --short HEAD)" || {
+  error 'Must be on branch, but HEAD = %s' "$(git rev-parse HEAD)"
+}
+
+# RDG check for divergence
+
+REMOTE="$(git config --get branch."${OLD_BRANCH_NAME}".remote)"
+REMOTE_REVISION="$(git rev-parse "${REMOTE}/${OLD_BRANCH_NAME}")"
+WORKSPACE_REVISION="$(git rev-parse "${OLD_BRANCH_NAME}")" 
+
+[[ "${WORKSPACE_REVISION}" == "${REMOTE_REVISION}" ]] && {
+  log "%s == %s/%s - no integrate needed?" \
+    "${OLD_BRANCH_NAME}" "${REMOTE}" "${OLD_BRANCH_NAME}"
+  exit 0
+}
+
+git merge-base --is-ancestor "${WORKSPACE_REVISION}" "${REMOTE_REVISION}" && {
+  log "Workspace revision %s is an ancesotor of remote %s revision %s" \
+    "${WORKSPACE_REVISION}" "${REMOTE}" "${REMOTE_REVISION}"
+  error ":; git pull"
+}
+
+git merge-base --is-ancestor "${REMOTE_REVISION}" "${WORKSPACE_REVISION}" && {
+  log "Remote %s revision %s is an ancesotor of workspace revision %s" \
+    "${REMOTE}" "${REMOTE_REVISION}" "${WORKSPACE_REVISION}"
+  error ":; git push"
+}
+
+NEW_BRANCH_NAME="${(L)$(
+  git show --no-patch --format="%s" HEAD | tr -dc '0-9A-Za-z '
+  [[ 0 -eq "${#pipestatus:#0}" ]]
+)// /-}"
+
+git checkout -b "${NEW_BRANCH_NAME}"
+git branch -D "${OLD_BRANCH_NAME}"
+git fetch
+git checkout "${OLD_BRANCH_NAME}"
+git merge "${NEW_BRANCH_NAME}"
+git diff HEAD~ HEAD
