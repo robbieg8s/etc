@@ -63,18 +63,23 @@ do
         git branch -d "${branch}"
       else
         extra=""
+        hl_dashD_on=""
+        hl_dashD_off=""
         merge_base="$(git merge-base "${remote_main}" "${branch}")"
         merge_base_tree="$(git show "${merge_base}" --format=format:%T --no-patch)"
         if [ "$(git show --format=format:%T --no-patch "${branch}" --)" = "${merge_base_tree}" ]
         then
-          extra=" (tree identical to tree of git merge-base '${remote_main}')"
+          hl_dashD_on="$(tput setaf 2)"
+          hl_dashD_off="$(tput sgr0)"
+          extra=" (${hl_dashD_on}tree identical to tree of git merge-base '${remote_main}'${hl_dashD_off})"
+
         fi
         printf "Stale branch %s%s has %s commits not on %s\n" \
           "${branch}" "${extra}" "${commit_count}" "${remote_main}"
         printf ":; git log --oneline '%s..%s'\n" "${remote_main}" "${branch}"
         printf ":; git diff \$(git merge-base '%s' '%s' --) '%s' --\n" "${remote_main}" "${branch}" "${branch}"
         printf ":; git tag --contains '%s'\n" "${branch}"
-        printf ":; git branch -D '%s'\n" "${branch}"
+        printf ":; ${hl_dashD_on}git branch -D '%s'${hl_dashD_off}\n" "${branch}"
         printf ":; git push --set-upstream '%s' '%s'\n" "${remote}" "${branch}"
       fi
     done
