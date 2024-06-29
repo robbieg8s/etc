@@ -1,12 +1,8 @@
-#!/bin/zsh -f
+#!/bin/zsh -ef
 
 # This script should really be called "open C# files in Rider" because i'm using it from
 # other places (e.g. .tigrc, not just iterm-click), but the intent is that it becomes
 # "open file in the right heavy editor".
-#
-# At some point we should have arguments for line numbers also
-
-set -e
 
 # Configured as Profiles/Advanced/Semantic History -> Run command...,
 # $HOME/bin/Darwin/iterm-click \1
@@ -42,7 +38,7 @@ fi
 
 if [[ "${file}" = */* ]]
 then
-  abbreviated="${file:h1}/.../${file:t}"
+  abbreviated="${file:h2}/.../${file:t}"
 else
   abbreviated="${file}"
 fi
