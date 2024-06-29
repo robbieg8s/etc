@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 # Merge a branch back untracked so it can be reworked
 
 # This is designed for a workflow where "mostly final"
@@ -6,5 +6,5 @@
 # and segmented on a target branch for publication.
 
 # It's ok if the merge fails, don't abort
-git merge --no-commit --no-ff "$@"
+git merge --no-commit --no-ff "$@" || true
 git reset --mixed -N HEAD

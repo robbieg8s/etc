@@ -1,4 +1,4 @@
-#!/bin/zsh -f
+#!/bin/zsh -ef
 
 () {
     local pbfile="${1:?}"

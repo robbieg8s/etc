@@ -1,11 +1,10 @@
-#!/bin/zsh -f
+#!/bin/zsh -ef
 
 # Emit some random words
 # Word list from https://github.com/bitcoin/bips/blob/master/bip-0039/english.txt
 # Data below product via
 # curl --silent https://raw.githubusercontent.com/bitcoin/bips/master/bip-0039/english.txt | lzma -9 | base64 --break 80
 
-set -e
 count=${1:-1}
 
 () {

@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 IMAGE_ID="${1:?}"
 shift

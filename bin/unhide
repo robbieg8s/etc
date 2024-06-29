@@ -1,6 +1,4 @@
-#!/bin/zsh -f
-
-set -e
+#!/bin/zsh -ef
 
 log() {
     printf '%s\n' "$@" 1>&2

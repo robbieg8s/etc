@@ -1,6 +1,4 @@
-#!/bin/zsh
-
-set -e
+#!/bin/zsh -ef
 
 message() {
   if [[ -z "${SILENT}" ]]

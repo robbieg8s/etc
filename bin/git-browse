@@ -1,7 +1,5 @@
-#!/bin/zsh -f
+#!/bin/zsh -ef
 # Open the current working directory git context in the web browser
-
-set -e
 
 log() {
   printf '%s\n' "$@" 1>&2

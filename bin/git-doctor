@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 # Analyze a git checkout for fixups and offer solutions
 
 # Feature backlog:
@@ -14,8 +14,6 @@
 #   command just in case
 # - provides options for analyzing/pushing/deleting the branch, and indicates if the tree
 #   of the branch matches it's merge base with remote main (common in reworked branches).
-
-set -e
 
 echo "Fetching"
 git fetch

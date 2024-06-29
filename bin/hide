@@ -1,6 +1,4 @@
-#!/bin/zsh -f
-
-set -e
+#!/bin/zsh -ef
 
 for file in "$@"
 do

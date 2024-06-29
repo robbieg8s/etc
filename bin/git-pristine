@@ -1,8 +1,6 @@
-#!/bin/zsh -f
+#!/bin/zsh -ef
 
 # indicate, by exit status, if the git checkout is clean
-
-set -e
 
 show_indented() {
   sed -e 's/^/  /' "$@"

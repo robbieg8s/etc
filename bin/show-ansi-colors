@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/sh -e
 
 # ansi_name number
 # Print the ansi colour name for number
