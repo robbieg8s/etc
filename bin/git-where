@@ -1,12 +1,14 @@
-#!/bin/sh
+#!/bin/sh -e
 # Print a symbolic description of the current HEAD
 
-symbolic=$(git symbolic-ref --quiet HEAD)
-if [ -z "${symbolic}" ]
-then
+location="$(git symbolic-ref --short --quiet HEAD)" || exitCode=$?
+case "${exitCode-}" in
+  1) # no symbolic ref, use describe to get a detached description
     location="detached $(git describe --always --all --contains HEAD)"
-else
-  location="${symbolic#refs/heads/}"
-fi
+    ;;
+  ?*) # any other non-empty exit is a git error, and it has already printed a message
+    exit "${exitCode}"
+    ;;
+esac
 
 printf '%s\n' "${location}"
