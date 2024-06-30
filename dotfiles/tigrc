@@ -1,3 +1,16 @@
+set line-graphics = utf-8
+
+set mouse = true
+set mouse-scroll = 1
+set mouse-wheel-cursor = true
+
+set show-untracked = false
+
+bind generic <Up> move-up
+bind generic <Down> move-down
+
+bind generic n !>vim -c '$' COMMIT_EDITMSG
+
 # Open the appropriate heavy editor on file
 # It would be nice to suppress the a/ and b/ on diffs using --no-prefix,
 # so %(file) was the file system file, but this appears to break tig's
