@@ -27,12 +27,9 @@ ga() {
 }
 compdef _git ga=git-add
 gb() {
-  git browse "$@"
+  git branch "$@"
 }
-# useful in commit review workflows
-gbh() {
-  git browse HEAD "$@"
-}
+compdef _git gb=git-branch
 gc() {
   git checkout "$@"
 }
@@ -61,6 +58,17 @@ gs() {
   git status "$@"
 }
 compdef _git gs=git-status
+gw() {
+  git web "$@"
+}
+# useful in commit review workflows
+gwh() {
+  git web "$@" HEAD
+}
+gx() {
+  git commit "$@"
+}
+compdef _git gx=git-commit
 
 # Shell history in sqlite
 # These are for interactive use, and so fail if teh relevant variables aren't set
