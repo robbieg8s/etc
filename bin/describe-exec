@@ -19,13 +19,11 @@
 [[ -n "${HALFYAK_DESCRIBE_EXEC_STDERR}" ]] && exec 2>"${HALFYAK_DESCRIBE_EXEC_STDERR}"
 [[ -n "${HALFYAK_DESCRIBE_EXEC_ENV}" ]] && env >"${HALFYAK_DESCRIBE_EXEC_ENV}"
 
-exec 1>&2
-
-printf 'PWD=%s\n' "${(qqqq)PWD}"
-printf '$#=%s\n' "${(qqqq)#}"
-printf '$0=%s\n' "${(qqqq)0}"
+print -u2 -f 'PWD=%s\n' "${(qqqq)PWD}"
+print -u2 -f '$#=%s\n' "${(qqqq)#}"
+print -u2 -f '$0=%s\n' "${(qqqq)0}"
 arg_index=0
 for arg in "$@"
 do
-  printf '$%s=%s\n' "$((++arg_index))" "${(qqqq)arg}"
+  print -u2 -f '$%s=%s\n' "$((++arg_index))" "${(qqqq)arg}"
 done
