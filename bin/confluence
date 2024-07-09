@@ -1,0 +1,14 @@
+#!/bin/zsh -ef
+
+credentials() {
+    op item get --vault Private 'id.atlassian.com' --fields label=username,label=password --format json \
+    | jq --raw-output 'map({key:.id,value}) | from_entries | "user=\(.username):\(.password)"'
+}
+
+URL="${1:?}"
+shift
+
+curl --disable --silent \
+    --config <(credentials) \
+    "$@" \
+    --url "${URL}"

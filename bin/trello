@@ -1,0 +1,11 @@
+#!/bin/zsh -ef
+
+credentials() {
+    op item get --vault Private 'Trello' --fields label=apikey,label=token --format json \
+    | jq --raw-output 'map({key:.label,value}) | from_entries | "Authorization: OAuth oauth_consumer_key=\"\(.apikey)\", oauth_token=\"\(.token)\""'
+}
+
+URL="${1:?}"
+shift
+
+curl --header @<(credentials) "$@" "${URL}"
