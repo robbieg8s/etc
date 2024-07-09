@@ -6,8 +6,8 @@ set mouse-wheel-cursor = true
 
 set show-untracked = false
 
-bind generic <Up> move-up
-bind generic <Down> move-down
+bind generic <Up> none
+bind generic <Down> none
 
 bind generic n !>vim -c '$' COMMIT_EDITMSG
 
