@@ -4,6 +4,7 @@
 // @author      Robbie Gates
 // @description Tweaks the Atlassian Cloud UI
 // @match       https://*.atlassian.net/*
+// @match       https://bitbucket.org/*
 // @inject-into content
 // @grant       none
 // ==/UserScript==
