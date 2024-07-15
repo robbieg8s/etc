@@ -31,6 +31,10 @@ then
           # Looks like a webstorm project
           exec open -nb com.jetbrains.webstorm --args ${line+--line} ${line+"${line}"} "${file}"
       }
+      [[ -e "${dir}/.idea" && -d "${dir}/hugo" ]] && {
+          # Hugo website, use webstorm
+          exec open -nb com.jetbrains.webstorm --args ${line+--line} ${line+"${line}"} "${file}"
+      }
       dir="${dir:h}"
   done
 fi
