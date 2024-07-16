@@ -1,0 +1,263 @@
+#!/bin/zsh -ef
+
+# This script is designed to be used as a general helper wrapper for invocations from mutt.
+
+log() {
+  local fmt="${1:?}"
+  shift
+  print -u2 -f "${fmt}" -- "$@"
+}
+
+error() {
+  log "$@"
+  exit 1
+}
+
+usage() {
+  log 'Usage: %s [ -h | --help ] [ -x ] [ -a FIELD ]... [ -e ENV FIELD ]... [ -- ] UTILITY [ ... ]\n' "$0"
+  log '  %s\n' \
+    'Parse RFC822 mbox format from stdin, and invoke UTILITY ... for each message with message on stdin' \
+    '-a, --arg FIELD: extract header FIELD from each message and append to arguments' \
+    '  A given FIELD may only be given once.' \
+    '  This argument may be given multiple times, arguments append in the order provided.' \
+    '  If a header is repeated, values are concatenated with newline separators.' \
+    '-e, --env ENV: extract header FIELD from each message, and set ENV in the environment of UTILITY' \
+    '  A given FIELD may only be given once.' \
+    '  If a header is repeated, values are concatenated with newline separators.' \
+    '-h, --help: Show usage, all other options ignored' \
+    '-x: Debug with via set -x'
+}
+
+# As we parse the arguments, we build up three variable values to pass through to awk
+# Since FIELD names cannot contain :, we can use that to separate fields. Since environment variable
+# names cannot contain =, we can use that to separate them. We pass environment as two separate values
+# to make parsing and splitting easier.
+
+ARGUMENT_FIELDS=''
+ENVIRONMENT_NAMES=''
+ENVIRONMENT_FIELDS=''
+
+while [ $# -ne 0 ]
+do
+  case "${1:?}" in
+    -h|--help)
+      usage
+      exit 0
+      ;;
+    -x)
+      set -x
+      shift
+      ;;
+    -a|--arg)
+      [ $# -ge 2 ] || error "Option %s requires 1 argument\n" "$1"
+      ARGUMENT_FIELDS="${ARGUMENT_FIELDS}:${2:?}"
+      shift 2
+      ;;
+    -e|--env)
+      [ $# -ge 3 ] || error "Option %s requires 2 arguments\n" "$1"
+      ENVIRONMENT_NAMES="${ENVIRONMENT_NAMES}=${2:?}"
+      ENVIRONMENT_FIELDS="${ENVIRONMENT_FIELDS}:${3:?}"
+      shift 3
+      ;;
+    --)
+      shift
+      break
+      ;;
+    -*)
+      log "Unrecognised option: '%s'\n" "${1}"
+      usage
+      exit 1
+      ;;
+    *)
+      break
+      ;;
+  esac
+  done
+
+[[ $# -ne 0 ]] || {
+  log "UTILITY argument is required\n"
+  usage
+  exit 1
+}
+
+() {
+  local scriptFile="${1:?}"
+  local bodyFile="${2:?}"
+  shift 2
+  # Write a driver script to invoke from auth. Doing this via an intermediate script allows us to build
+  # the forwarded arguments (in $@) using zsh mechanisms, and also means that we don't need to worry about
+  # the case where UTILITY contains an =.
+  cat > "${scriptFile}" << END_SCRIPT
+#!/bin/zsh -ef
+exec ${(@q)@} "\$@" < ${(q)bodyFile}
+END_SCRIPT
+  chmod 700 "${scriptFile}"
+  # The $@ processing loop adding a leading separator to each compound, and we trim those leading
+  # separators before passing them to awk.  We also need to double backslashes, because awk treats -v as
+  # a string literal assignment, and in so doing interprets C style escapes in the value, but we trust
+  # the user to escape correctly for their shell and trust the invocation values.
+  # You can see the awk behaviour (for macOS awk at least) where argv processing calls setclvar
+  # which calls qstring which decodes escapes:
+  # https://github.com/apple-open-source/macos/blob/8038f956fee603c486e75adbf93cac7a66064f02/awk/src/main.c#L184
+  # https://github.com/apple-open-source/macos/blob/8038f956fee603c486e75adbf93cac7a66064f02/awk/src/lib.c#L299
+  # https://github.com/apple-open-source/macos/blob/8038f956fee603c486e75adbf93cac7a66064f02/awk/src/tran.c#L598
+  awk \
+    -F : \
+    -v argumentFields="${${ARGUMENT_FIELDS#:}//\\/\\\\}" \
+    -v environmentNames="${${ENVIRONMENT_NAMES#=}//\\/\\\\}" \
+    -v environmentFields="${${ENVIRONMENT_FIELDS#:}//\\/\\\\}" \
+    -v scriptFile="${scriptFile}" \
+    -v bodyFile="${bodyFile}" \
+    -f =(cat<<'END_AWK'
+# Variable headerValue is the value of the current field being captured
+# Variable captureArgumentIndex is the index of the current field being captured in argumentFields
+# Array variable argumentValues is values captured for argumentFields
+# Variable captureEnvironmentIndex is the index of the current field being captured in environmentFields
+# Array variable environmentValues is values captured for environmentFields
+# Variable state is the parser state
+# Variable exitCode is the exit status
+# state = 0 Seeking From_ line (start of headers) for the first time
+# state = 1 In headers, seeking a field to capture or body
+# state = 2 In a field continuation, not capturing
+# state = 3 In a field continuation, capturing
+# state = 4 Collecting the body, seeking From_ line a subsequent time
+function collectArgument() {
+  if (-1 != captureArgumentIndex) {
+    if (captureArgumentIndex in argumentValues) {
+      argumentValues[captureArgumentIndex] = argumentValues[captureArgumentIndex] "\\012" headerValue;
+    } else {
+      argumentValues[captureArgumentIndex] = headerValue;
+    }
+    captureArgumentIndex = -1;
+  }
+}
+function collectEnvironment() {
+  if (-1 != captureEnvironmentIndex) {
+    if (captureEnvironmentIndex in environmentValues) {
+      environmentValues[captureEnvironmentIndex] = environmentValues[captureEnvironmentIndex] "\\012" headerValue;
+    } else {
+      environmentValues[captureEnvironmentIndex] = headerValue;
+    }
+    captureEnvironmentIndex = -1;
+  }
+}
+function find(name, array) {
+  for(i = 1; i <= length(array); ++i) {
+    if (name == array[i]) {
+      return i;
+    }
+  }
+  return -1;
+}
+function quote(value) {
+  gsub("'", "'\\''", value);
+  return "'" value "'";
+}
+function invokeUtility() {
+  cmd = "env";
+  # All the -u's have to come before the name=value's
+  for(i = 1; i <= length(environmentFieldsArray); ++i) {
+    if (!(i in environmentValues)) {
+      cmd = cmd " -u " quote(environmentNamesArray[i]);
+    }
+  }
+  for(i = 1; i <= length(environmentFieldsArray); ++i) {
+    if (i in environmentValues) {
+      cmd = cmd " " quote(environmentNamesArray[i]) "=" quote(environmentValues[i]);
+    }
+  }
+  cmd = cmd " " scriptFile;
+  # Note that we traverse argumentFieldsArray so that we inspect missing values also
+  # Missing values for argument fields are emitted as empty
+  for(i = 1; i <= length(argumentFieldsArray); ++i) {
+    cmd = cmd " " quote(argumentValues[i]);
+  }
+  if (0 != system(cmd)) {
+    exitCode = 1;
+  }
+}
+function resetVariables() {
+  captureArgumentIndex = -1;
+  delete argumentValues;
+  captureEnvironmentIndex = -1;
+  delete environmentValues;
+  blankHeld = 0;
+}
+BEGIN {
+  split(argumentFields, argumentFieldsArray, ":");
+  split(environmentNames, environmentNamesArray, "=");
+  split(environmentFields, environmentFieldsArray, ":");
+  resetVariables();
+  state = 0;
+  exitCode = 0;
+}
+(state == 0) && /^From / {
+  state = 1;
+  next;
+}
+(state == 2) && /^[ \t]/ {
+  next;
+}
+(state == 3) && /^[ \t]/ {
+  headerValue = headerValue substr($0, 1, 1);
+  sub(/^[ \t]*/, "");
+  headerValue = headerValue $0;
+  next;
+}
+(state == 2) {
+  state = 1; # And keep processing
+}
+(state == 3) {
+  state = 1; # And keep processing
+}
+(state == 1) {
+  collectArgument();
+  collectEnvironment();
+}
+(state == 1) && (NF > 1) {
+  captureArgumentIndex = find($1, argumentFieldsArray);
+  captureEnvironmentIndex = find($1, environmentFieldsArray);
+  if ((-1 != captureArgumentIndex) || (-1 != captureEnvironmentIndex)) {
+    headerValue = substr($0, 2 + length($1));
+    sub("[ \t]*", "", headerValue);
+    state = 3;
+    next;
+  } else {
+    state = 2;
+    next;
+  }
+}
+(state == 1) && /^$/ {
+  close(bodyFile);
+  printf "" > bodyFile;
+  state = 4;
+  next;
+}
+(state == 4) && /^From / {
+  blankHeld = 0;
+  invokeUtility();
+  resetVariables();
+  state = 1;
+  next;
+}
+(state == 4) && blankHeld {
+  print "" >> bodyFile;
+  blankHeld = 0;
+}
+(state == 4) && /^$/ {
+  blankHeld = 1;
+  next;
+}
+(state == 4) {
+  print >> bodyFile;
+  next;
+}
+END {
+  if (state == 4) {
+    invokeUtility();
+  }
+  exit exitCode;
+}
+END_AWK
+)
+} =(true) =(true) "$@"
