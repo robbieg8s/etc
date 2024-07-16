@@ -29,15 +29,15 @@ WORKSPACE_REVISION="$(git rev-parse "${OLD_BRANCH_NAME}")"
 }
 
 git merge-base --is-ancestor "${WORKSPACE_REVISION}" "${REMOTE_REVISION}" && {
-  log "Workspace revision %s is an ancesotor of remote %s revision %s" \
+  log "Workspace revision %s is an ancestor of remote %s revision %s" \
     "${WORKSPACE_REVISION}" "${REMOTE}" "${REMOTE_REVISION}"
   error ":; git pull"
 }
 
 git merge-base --is-ancestor "${REMOTE_REVISION}" "${WORKSPACE_REVISION}" && {
-  log "Remote %s revision %s is an ancesotor of workspace revision %s" \
+  log "Remote %s revision %s is an ancestor of workspace revision %s" \
     "${REMOTE}" "${REMOTE_REVISION}" "${WORKSPACE_REVISION}"
-  error ":; git push"
+  error ":; git fetch && git integrate"
 }
 
 NEW_BRANCH_NAME="${(L)$(
