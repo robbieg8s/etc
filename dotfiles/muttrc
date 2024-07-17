@@ -11,5 +11,13 @@ set mbox=+inbox
 set delete=yes
 set help=no
 
+# skip waiting for command output if the command succeeded
+set wait_key=no
+
 # This is the "up" in gmail, and i have pretty strong muscle memory for it.
 bind pager u exit
+
+# This will error out if the file doesn't exist. If this becomes annoying,
+# you can work around this using
+#   source "cat ~/etc/private/mutt/muttrc"|
+source ~/etc/private/mutt/muttrc
