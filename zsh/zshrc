@@ -71,6 +71,18 @@ zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqli
   }
 }
 
+## Environment/Command specific additional configuration
+# half_etc_after is defined in zshenv
+# The sequencing here is tricky, since on macOS we need to look up compinit's location to fix
+# the fpath so we get the right _git completion, but compinit itself uses the fpath to pick the
+# right _git. In general i'd do fpath reorganization earlier (to reduce surprises from anything
+# else that uses autoload). So put it right need compinit (to emphasize the coupling), and resolve
+# compinit before running the after. We hard (-R) resolve to improve the chance that i find out
+# if there are any breakages in this approach.
+
+autoload -R compinit
+halfyak_etc_after "${ZSHRC}"
+
 ## Autocompletion configuration
 zstyle ':completion:*' matcher-list '' 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*:*:*:*:messages' format "%d"
@@ -80,12 +92,6 @@ autoload -U +X compinit && compinit
 #   setopt automenu
 #   zstyle ':completion:*' menu select
 # to get arrow selected completion, but i need to tune/train more to like it
-
-## Environment/Command specific additional configuration
-# half_etc_after is defined in zshenv
-# This needs to come after compinit, since on macOS we need to look up compinit's location to fix
-# the fpath, but it should come before anything else which might use autoloads to reduce surprise.
-halfyak_etc_after "${ZSHRC}"
 
 ## Interactive aliases
 # Remove all other aliases first - this was motivated by misbehaving utilities which add functions
