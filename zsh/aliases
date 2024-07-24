@@ -38,6 +38,10 @@ gd() {
   git diff "$@"
 }
 compdef _git gd=git-diff
+gds() {
+  git diff --staged "$@"
+}
+compdef _git gds=git-diff
 gf() {
   git fetch "$@"
 }
@@ -46,6 +50,10 @@ gl() {
   git log "$@"
 }
 compdef _git gl=git-log
+gm() {
+  git merge "$@"
+}
+compdef _git gm=git-merge
 gp() {
   git pull "$@"
 }
