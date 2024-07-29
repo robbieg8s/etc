@@ -1,0 +1,56 @@
+#!/usr/bin/env jq --compact-output --from-file
+
+def isSchemaOrg(type):
+    ( ."@context" as $context
+      | ["http://schema.org", "https://schema.org"]
+      | any(. == $context)
+    ) and (
+      ."@type" == type
+    )
+    ;
+
+{
+  type: "doc",
+  version: 1,
+  content: [
+    ( .[]
+      | select(isSchemaOrg("Recipe"))
+      | (
+        { type: "text", text: .description },
+        { type: "heading", attrs: { level: 2 }, content: [ { type: "text", text: "Ingredients" } ] },
+        { type: "bulletList",
+          content: .recipeIngredient | map ( {
+            type: "listItem",
+            content: [ {
+              type: "paragraph",
+              content: [ { type: "text", text: .} ]
+            } ]
+          } )
+        },
+        { type: "heading", attrs: { level: 2 }, content: [ { type: "text", text: "Method" } ] },
+        { type: "orderedList",
+          content: .recipeInstructions | map ( {
+            type: "listItem",
+            content: [ {
+              type: "paragraph",
+              content: [ { type: "text", text: .text} ]
+            } ]
+          } )
+        }
+      )
+    ),
+    { type: "heading", attrs: { level: 2 }, content: [ { type: "text", text: "Links" } ] },
+    ( .[]
+      | select(isSchemaOrg("WebPage"))
+      | ( { type: "paragraph",
+          content: [ {
+            type: "inlineCard",
+            attrs: { url: ."@id" }
+          }, {
+            type: "text",
+            text: " "
+          } ]
+        } )
+    )
+  ]
+}
