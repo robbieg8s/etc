@@ -18,7 +18,7 @@
     var item = JSON.parse(ldJsons.snapshotItem(i).text);
     if (Array.isArray(item)) {
       return item.flatMap(subitem => isSchemaOrgRecipe(subitem) ? [ subitem ] : []);
-    } else if (isSchemaOrgRecipe(item)) { 
+    } else if (isSchemaOrgRecipe(item)) {
       return [ item ] ;
     } else if (('https://schema.org' == item['@context']) && Array.isArray(item['@graph'])) {
       return item['@graph'].flatMap(subitem => ('Recipe' == subitem['@type']) ? [ subitem ] : []);
