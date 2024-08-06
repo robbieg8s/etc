@@ -12,31 +12,23 @@
 (() => {
   const akTopNav = 'AkTopNav';
   const removeUpgradeButton = () => {
+    // Try to make this xpath pretty sensitive, since we run it every mutation
     const upgradeButtons = document.evaluate(
-      './/nav/following-sibling::div/div[.//span[text()="Upgrade"]]',
+      './/nav/following-sibling::div/div[not(./@style="display: none;") and .//span[text()="Upgrade"]]',
       document.getElementById(akTopNav),
       null,
       XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
       null);
     for (let i = 0; i < upgradeButtons.snapshotLength; ++i) {
       const upgradeButton = upgradeButtons.snapshotItem(i);
-      if (upgradeButton.style.display != 'none') {
-        console.log('Atlassian Improvements hiding Upgrade ', upgradeButton);
-        upgradeButton.style.display='none';
-      }
+      console.log('Atlassian Improvements hiding Upgrade ', upgradeButton);
+      upgradeButton.style.display='none';
     }
   };
 
   (new MutationObserver((mutations, observer) => {
-    // Like most user scripts, this is probably a bit brittle, but if it starts to miss things due to deeper trees,
-    // i suspect it can be patched up using loops rather than querying specific node path attributes
-    if (0 != mutations
-      .filter(mutation => mutation.type == "childList")
-      .map(mutation => mutation.target?.parentNode?.parentNode)
-      .filter(node => node?.getAttribute && (akTopNav == node.getAttribute('id')))
-      .length) {
-      removeUpgradeButton();
-    }
+    // The upgrade button has moved around, so just always remove it
+    removeUpgradeButton();
     mutations
       .filter(mutation => 'atlassian-navigation-notification-count' == mutation.target.getAttribute('id'))
       .forEach(mutation => {
