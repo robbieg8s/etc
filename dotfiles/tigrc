@@ -10,6 +10,7 @@ bind generic <Up> none
 bind generic <Down> none
 
 bind generic n !>vim -c '$' COMMIT_EDITMSG
+bind generic y @sh -c "printf '%s' '%(text)' | pbcopy"
 
 # Open the appropriate heavy editor on file
 # It would be nice to suppress the a/ and b/ on diffs using --no-prefix,
