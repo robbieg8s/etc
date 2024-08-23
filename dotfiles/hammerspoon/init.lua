@@ -250,11 +250,15 @@ function normalizeWindow(screen, window)
     end,
     ["com.1password.1password"] = smallerUpperRight,
     ["com.apple.MobileSMS"] = right1280,
+    ["com.kapeli.dashdoc"] = right1280,
     ["com.tinyspeck.slackmacgap"] = right1280,
     ["com.unity3d.unityhub"] = smallerUpperRight,
     ["org.whispersystems.signal-desktop"] = smallerUpperRight
   }
   local bundleId = window:application():bundleID()
+  -- Make it easy to get the data you need to extend the handler map
+  -- If this is useful outside this context, you could put extra info here also ...
+  hs.pasteboard.setContents(bundleId)
   local handler = handlers[bundleId]
   if handler ~= nil then
     handler()
