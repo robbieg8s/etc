@@ -44,9 +44,12 @@ SAVEHIST=1000
 # if you once again set variables in precmd that are used in the prompt
 () {
   # Include a note if running dockerized.
-  # Probably would be good to extend this to "ssh'd in", etc.
   [[ -e /.dockerenv ]] && local notify_docker=" docker"
-  PS1="%F{red}%B:${notify_docker-};%b%f "
+  # Probably would be good to extend this to "ssh'd in", running in JetBrains IDE, etc.
+  # lsof -p $PPID might be interesting here, esp lsof -a -p $PPID -d cwd -Fn
+  # but be careful of lsof in docker because busybox's lsof is not full featured
+  # For a use case i have to hand, flag subshells
+  PS1="%F{red}%B:%(2L. subshell.)${notify_docker-};%b%f "
   PS2=':%_; '
 }
 

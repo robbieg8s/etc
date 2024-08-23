@@ -46,4 +46,10 @@ END_SETUP
 # (a) Mostly i use non-login shells, so be like that
 # (b) I want to keep the environment, notably TERM_PROGRAM
 # (c) The shell is needed for root, since I don't want to chsh them
+# (d) We wind SHLVL back to hide this script. The outer shell is gone according to ps
+#     inside the container, and i want to be able to correctly flag perceived subshells in
+#     my prompt. I considered resetting it, but reducing it by 1 seems more accurate. As i
+#     read the code, zsh just sets it on start to 1 more than it found in the environment.
+#     https://github.com/zsh-users/zsh/blob/5977d3cdd4b241ab7afff868ed58afc00b45c424/Src/params.c#L926
+export SHLVL=$((SHLVL - 1))
 exec su -s /bin/zsh "${HALFYAK_USERNAME:-root}"
