@@ -1,6 +1,7 @@
 #!/bin/zsh -ef
 
 # Unambigously describe how we were exec'd
+# - If HALFYAK_DESCRIBE_EXEC_STDIN is set in environment, capture stdin to that file.
 # - If HALFYAK_DESCRIBE_EXEC_STDERR is set in environment, write describe output there,
 #   rather than stderr.
 # - If HALFYAK_DESCRIBE_EXEC_ENV is set in environment, write environment there.
@@ -9,8 +10,7 @@
 # - If HALFYAK_DESCRIBE_EXEC_FORWARD is set in environment, exec that with $@
 #   when we are done.  If not, but if [[ $0:A != $0 ]], then behave as if
 #   HALFYAK_DESCRIBE_EXEC_FORWARD was set to whence -a "${0##*/}" | sed -ne 2p
-# - If HALFYAK_DESCRIBE_EXEC_STDIN is set in environment, capture stdin to that
-#   file. If also ..._FORWARD, use tee to capture, wrap and forward.
+# - If HALFYAK_DESCRIBE_EXEC_STDIN and ..._FORWARD, use tee to capture, wrap and forward.
 # - If HALFYAK_DESCRIBE_EXEC_STDOUT is set in environment, cat that to stdout.
 #   If also ..._FORWARD, instead use tee to capture the stdout from the wrapped process.
 # - If HALFYAK_DESCRIBE_EXEC_STDERR and ..._FORWARD, use tee to capture the stderr
@@ -18,6 +18,7 @@
 
 [[ -n "${HALFYAK_DESCRIBE_EXEC_STDERR}" ]] && exec 2>"${HALFYAK_DESCRIBE_EXEC_STDERR}"
 [[ -n "${HALFYAK_DESCRIBE_EXEC_ENV}" ]] && env >"${HALFYAK_DESCRIBE_EXEC_ENV}"
+[[ -n "${HALFYAK_DESCRIBE_EXEC_STDIN}" ]] && cat > "${HALFYAK_DESCRIBE_EXEC_STDIN}"
 
 print -u2 -f 'PWD=%s\n' "${(qqqq)PWD}"
 print -u2 -f '$#=%s\n' "${(qqqq)#}"
