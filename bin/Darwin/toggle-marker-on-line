@@ -1,0 +1,14 @@
+#!/bin/zsh -ef
+
+marker="${1:?}"
+line="${2:?}"
+file="${3:?}"
+SED_PROGRAM="$(cat<<END_SED
+$line {
+  s@\( *\)$marker @\1@
+  t
+  s@\([^ ]\)@$marker \1@
+}
+END_SED
+)"
+exec sed -I '' -e "${SED_PROGRAM}" "${file}"
