@@ -250,6 +250,7 @@ function normalizeWindow(screen, window)
     end,
     ["com.1password.1password"] = smallerUpperRight,
     ["com.apple.MobileSMS"] = right1280,
+    ["com.apple.reminders"] = smallerUpperRight,
     ["com.kapeli.dashdoc"] = right1280,
     ["com.tinyspeck.slackmacgap"] = right1280,
     ["com.unity3d.unityhub"] = smallerUpperRight,
