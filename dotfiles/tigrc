@@ -10,7 +10,10 @@ set show-untracked = false
 bind generic <Up> none
 bind generic <Down> none
 
-bind generic n !>vim -c '$' COMMIT_EDITMSG
+# N brings up commit notes named so that my vi filetype finds it
+# Don't us n for this, in tig it works after / like it does in vi
+bind generic N !>vim -c '$' COMMIT_EDITMSG
+# A very poor (y)ank, but good enough to pull text from tig into vi
 bind generic y @sh -c "printf '%s' '%(text)' | pbcopy"
 
 # I set *.meta to binary to reduce cruft in unity diffs, this
