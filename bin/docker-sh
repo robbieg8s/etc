@@ -1,6 +1,9 @@
 #!/bin/sh -e
 
-IMAGE_ID="${1:?}"
-shift
-
-exec docker run --rm --interactive --tty --entrypoint /bin/sh "$@" "${IMAGE_ID}"
+if [ $# -eq 0 ]
+then
+  printf "Usage: %s [docker-options ...] image-id [image-arguments ...]\n" "$0" 1>&2
+  exit 1
+else
+  exec docker run --rm --interactive --tty --entrypoint /bin/sh "$@"
+fi
