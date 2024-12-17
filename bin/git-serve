@@ -1,0 +1,49 @@
+#!/bin/zsh -ef
+
+# Invoke git daemon with some standard configuration which is useful for local
+# git experimentation. This always appends --listen=127.0.0.1 so the default
+# is to only permit loopback connections for security. 
+# Script arguments are forwarded to the git daemon invocation, which is useful
+# for --enable=upload-archive for example, or for additional --listen arguments.
+
+# For the future, it might be interesting to investigate --access-hook, but my
+# current use case is almost always loopback, or otherwise an isolated network.
+
+if [[ ! -d .git ]]
+then
+    print -u2 "Not in a git root"
+    exit 1
+else
+  # Include --listen=127.0.0.1 if the invocation didn't
+  LOOPBACK='--listen=127.0.0.1'
+  [[ "${@[(i)${LOOPBACK}]}" -le $# ]] || {
+    set -- "$@" ${LOOPBACK}
+  }
+
+  # This parsing is macOS specific, but could be made more general if needed
+  ifconfig -a -u | awk '
+  /^[^[:space:]]*: / { iface = $1; }
+  /^[[:space:]]*inet / { print iface $2; }
+  ' | (
+    IFS=:
+    while read iface ip
+    do
+        # Yes, this assumes ip addresses have no glob specials, and aren't quoted.
+        LISTEN="--listen=${ip}"
+        if [[ "${@[(i)${LISTEN}]}" -le $# ]]
+        then
+          printf '# %s: Listening, clone with\n' "${iface}"
+        else
+          printf '# %s: Blocked, re-invoke as\n' "${iface}"
+          printf ':; %s' "${(q-)0}"
+          printf ' %s' "${(q-)@}"
+          printf ' %s\n' "${LISTEN}"
+          printf '# to enable clone with\n'
+        fi
+        printf ':; git clone git://%s/ %s\n\n' "${ip}" "${PWD:t}"
+    done
+  )
+  [[ 0 -eq "${#pipestatus:#0}" ]]
+
+  exec git daemon --verbose --export-all --enable=receive-pack --base-path=.git --reuseaddr --strict-paths "$@" .git/
+fi
