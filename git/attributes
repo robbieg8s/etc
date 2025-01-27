@@ -1,3 +1,6 @@
-# Treat Unity meta files as binary to avoid crufting up diffs
+# Treat some large textual files as binary to avoid crufting up diffs
 # Use git diff --text to get a diff when you need one
+# Unity meta files
 *.meta binary
+# Pnpm lock files
+pnpm-lock.yaml binary
