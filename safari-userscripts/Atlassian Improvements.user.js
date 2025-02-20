@@ -5,17 +5,17 @@
 // @description Tweaks the Atlassian Cloud UI
 // @match       https://*.atlassian.net/*
 // @match       https://bitbucket.org/*
+// @match       https://team.atlassian.com/*
 // @inject-into content
 // @grant       none
 // ==/UserScript==
 
 (() => {
-  const akTopNav = 'AkTopNav';
   const removeUpgradeButton = () => {
     // Try to make this xpath pretty sensitive, since we run it every mutation
     const upgradeButtons = document.evaluate(
-      './/nav/following-sibling::div/div[not(./@style="display: none;") and .//span[text()="Upgrade"]]',
-      document.getElementById(akTopNav),
+      './/nav[@aria-label="Actions"]//button[not(./@style="display: none;") and .//span[text()="Upgrade"]]',
+      document.documentElement,
       null,
       XPathResult.UNORDERED_NODE_SNAPSHOT_TYPE,
       null);
@@ -32,9 +32,8 @@
     mutations
       .filter(mutation => 'atlassian-navigation-notification-count' == mutation.target.getAttribute('id'))
       .forEach(mutation => {
+        // This needs to be tested on team.atlassian.com.
         Array.from(mutation.addedNodes)
-          // Originally this was further filtered here, but team.atlassian.com behaved different
-          // This might be a bit over eager, but check the behaviour on team.atlassian.com before fixing
           .forEach(addedNode => {
             // Hide the node (vs removal) so we don't break the bell
             addedNode.style.display = 'none';
@@ -42,10 +41,10 @@
           });
       });
   }))
-    // Observe the whole document, as it gets rebuilt after load. Sometimes the element with id akTopNav, the
-    // AtlasKit Top Navigation, is stable, but not always.
+    // Observe the whole document, as it gets rebuilt after load. Recent confluence navigation update have remove
+    // AtlasKit id elements which were previously useful for wayfinding.
     .observe(document.getRootNode(), { childList: true, subtree: true });
-  // Just in case we installed out mutation observed too late
+  // Just in case we installed our mutation observer too late
   removeUpgradeButton();
   console.log('Atlassian Improvements is at your service');
 })();
