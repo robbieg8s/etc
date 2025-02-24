@@ -47,6 +47,9 @@ syntax on
 if ("iTerm.app" == $TERM_PROGRAM)
   # Only set background and load colorscheme when we're in iTerm where it looks ok,
   # use defaults elsewhere (notably Apple_Terminal).
+  # Without this, Vim appears to correctly guess it is in a more capable terminal, and ignores
+  # the ctermfg based setup in my minimal color scheme.
+  set notermguicolors
   set background=dark
   colorscheme minimal
 endif
