@@ -1,0 +1,7 @@
+#!/bin/zsh
+
+() {
+  local pbfile="${1:?}"
+  pbpaste | cut -c2- | base64 --decode | pigz --decompress | jq > "${pbfile}"
+  "${EDITOR:-vi}" "${pbfile}" && { printf '0' ; cat "${pbfile}" | jq --compact-output | pigz --zlib | base64 ; } | pbcopy
+} =(true)
