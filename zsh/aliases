@@ -50,6 +50,12 @@ gl() {
   git log "$@"
 }
 compdef _git gl=git-log
+# Note: insert options before branch (expected usage --oneline ...)
+glom() {
+  git log "$@" origin/main
+}
+# Complete as if origin/main wasn't there, since options are inserted ahead of it
+compdef _git glom=git-log
 gm() {
   git merge "$@"
 }
