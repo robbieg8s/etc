@@ -72,6 +72,11 @@ gs() {
   git status "$@"
 }
 compdef _git gs=git-status
+# "view" for git show
+gv() {
+  git show "$@"
+}
+compdef _git gv=git-show
 gw() {
   git web "$@"
 }
