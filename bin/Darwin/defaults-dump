@@ -1,0 +1,48 @@
+#!/bin/zsh -ef
+
+# Dump the macos defaults as json
+
+# There's no way i can see off hand to get a machine readable form of this list,
+# calling NSUserDefaults.persistentDomainNames (via JXA) missed some entries.
+# If domains can contain the comma-space separator, this will be broken.
+defaults domains | sed -e 's/, /\'$'\n''/g' | while read domain
+do
+  # Note `defaults export` is undocumented by `defaults(1)`, but `defaults -help` mentions it.
+  # The `tr` is because i've seen nulls in the output (which xsltproc chokes on) - for example from iTerm
+  # https://groups.google.com/g/iterm2-discuss/c/k7XL5-BxEvE/m/L7Dp-bSJAgAJ
+  defaults export "${domain}" - | tr -d '$\0' | xsltproc --nonet --novalid =(cat<<'END_XSL'
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output
+    doctype-public="-//Apple//DTD PLIST 1.0//EN"
+    doctype-system="http://www.apple.com/DTDs/PropertyList-1.0.dtd"
+    encoding="UTF-8"
+    indent="yes"
+  />
+
+  <!-- By default, copy everything through. -->
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <!--
+    The Plist XML format uses date and data elements, which plutil refuses to convert to JSON. Since they're just
+    strings anyway (with ISO8610 / Base64 encoding), just convert them to strings. Yes, this is losing information,
+    but that's fine for my use case. If this becomes a problem, rewriting their values to a dictionary with keys for
+    type and value is probably not too hard, and is collision free and reversible.
+  -->
+  <xsl:template match="date|data">
+    <string>
+      <xsl:value-of select="."/>
+    </string>
+  </xsl:template>
+</xsl:stylesheet>
+END_XSL
+  # Then use plutil to plist -> json, and jq to wrap each in an object with the domain as key.
+  # In principle the wrapping could be done by xslt via a -stringparam argument and more code, but
+  # i've not put the effort in there yet. It would avoid some parsing and stringifying, so might be worth it.
+  # A quick test (my M2 Air) just removing the wrapping reduces a 5-6 second process by 0.5 - 1 seconds.
+  ) - | plutil -convert json -o - - | jq --arg domain "${domain}" '{ $domain: . }'
+done | jq --slurp '[ .[] | to_entries[] ] | from_entries'
