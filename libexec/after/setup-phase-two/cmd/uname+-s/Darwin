@@ -25,5 +25,6 @@
       > "${launchd_plists_expanded}/${launchd_plist:t}"
   done
   # For now, just update the LaunchAgents, and invoke launchctl manually
+  mkdir -p ~/Library/LaunchAgents
   noglob "${HALFYAK_ETC}"/libexec/link-config ~/Library/LaunchAgents/ "${launchd_plists_expanded}"/*.plist
 }
