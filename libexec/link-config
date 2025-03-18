@@ -44,6 +44,13 @@ else
   # it matches the setup use case anyway, and so i probably won't find bugs in other usage. I might
   # revisit this if i ever find a need for the more sophisticated behaviour.
   cd "${target_dir}"
+  # EXTENDED_GLOB needed for globs in conditionals
+  setopt EXTENDED_GLOB
+  # I've mixed feelings about the value of this warning, trying it out for singal to noise.
+  if [[ -z ${~source_pattern}(#qN) ]]
+  then
+    printf "No source files found from %s relative to %s\n" "${(q+)source_pattern}" "${(q+)PWD}"
+  fi
   for source_file in ${~source_pattern}(N)
   do
     # It's tempting to try to flatten the link a bit, but i've previously reused this logic for links

@@ -29,6 +29,9 @@ mkdir -p ~/var/log
 # Keeping them relative makes mounting them into docker containers easier
 noglob "${HALFYAK_ETC}"/libexec/link-config ~/. "${HALFYAK_ETC#${HOME:A}/}"/dotfiles/*
 
+# We manage ~/.config as its own set of links, but we need to relatize with respect to it, hence ..
+noglob "${HALFYAK_ETC}"/libexec/link-config ~/.config/ ../"${HALFYAK_ETC#${HOME:A}/}"/dotconfig/*
+
 # The git config is special, as the include mechanism is relative to the containing file,
 # which means we can't use symlinks without encoding the location of this configuration, since
 # the content is relative to the actual file, but git will consider it relative to the symlink.
