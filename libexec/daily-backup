@@ -30,5 +30,10 @@ else
 
   cp "${HOME}/.docker/config.json" "${BACKUP_DIR}/docker-config.json"
 
+  defaults-dump \
+    | bzip2 --stdout \
+    > "${BACKUP_DIR}/defaults-dump.json.bz2"
+  [[ 0 -eq "${#pipestatus:#0}" ]]
+
   log "$(du -sh "${BACKUP_DIR}")"
 fi
