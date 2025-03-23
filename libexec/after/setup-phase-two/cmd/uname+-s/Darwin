@@ -28,3 +28,7 @@
   mkdir -p ~/Library/LaunchAgents
   noglob "${HALFYAK_ETC}"/libexec/link-config ~/Library/LaunchAgents/ "${launchd_plists_expanded}"/*.plist
 }
+
+# Make the dock pop out take 10 seconds (i really rarely use it)
+defaults write com.apple.dock autohide-delay -int 10
+killall Dock
