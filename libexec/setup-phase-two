@@ -10,3 +10,22 @@ set -e
 # the details of the after mechanism.
 HALFYAK_ETC="${$(print -P '%x'):A:h:h}"
 halfyak_etc_after "${ZSH_ARGZERO}"
+
+# Build ssh known_hosts - arguably this should be an audit, but for now
+# am trying to get set up.
+() {
+  local known_hosts="${1:?}"
+  {
+    print '# https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints'
+    print '# via https://api.github.com/meta'
+    # My bootstrap script has a copy of this github url and parse, but since it can't
+    # use jq, this is a reimplementation in jq.
+    curl --silent https://api.github.com/meta \
+      | jq --raw-output '.ssh_keys[] | "github.com \(.)"'
+    [[ 0 -eq "${#pipestatus:#0}" ]]
+    # Bitbucket ships a usable known hosts straight from the api
+    print '# https://bitbucket.org/site/ssh'
+    curl --silent https://bitbucket.org/site/ssh
+  } > "${known_hosts}"
+  mv "${known_hosts}" ~/.ssh/known_hosts
+} =(true)
