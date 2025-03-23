@@ -1,0 +1,28 @@
+#!/bin/zsh -ef
+
+log() {
+  local fmt="${1:?}"
+  shift
+  print -f "$fmt\n" -- "$@"
+}
+
+fail() {
+  log "$@"
+  exit 1
+}
+
+SERIAL="$(system_profiler -json SPHardwareDataType | jq --raw-output '.SPHardwareDataType[0].serial_number')"
+SNAPSHOT_ROOT="${HOME}/Documents/etc/local/${SERIAL}"
+
+if [[ ! -d "${SNAPSHOT_ROOT}" ]]
+then
+  fail 'No snapshot root at %s, cannot snapshot' "${(q+)SNAPSHOT_ROOT}"
+else
+  for dir in ~/src/*(/)
+  do
+    local name="${dir##*/}"
+    local snapshot="${SNAPSHOT_ROOT}/src/${name}"
+    mkdir -p "${snapshot}"
+    git -C "${dir}" config get remote.origin.url > "${snapshot}/remote.origin.url"
+  done
+fi
