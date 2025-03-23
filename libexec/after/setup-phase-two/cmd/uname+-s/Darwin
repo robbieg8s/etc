@@ -32,3 +32,10 @@
 # Make the dock pop out take 10 seconds (i really rarely use it)
 defaults write com.apple.dock autohide-delay -int 10
 killall Dock
+
+# Make Cmd+W on the last tab close tab (i.e. nothing) rather than close window
+# You might need to re do this in System Settings -> Keyboard -> Keyboard Shortcuts... -> App Shortcuts
+# Or restart Safari - i'm not sure the defaults write works.
+# It also needs Full Disk Access, which might not be set first setup during bootstrap
+# Probably this should be an audit not a settings poke
+defaults write com.apple.Safari NSUserKeyEquivalents -dict-add "Close Tab" "@w"
