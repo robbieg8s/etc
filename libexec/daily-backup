@@ -14,7 +14,7 @@ error() {
 BACKUP_ROOT=~/cloud/backup
 if [[ ! -d "${BACKUP_ROOT}" ]]
 then
-  log "No backup root at '${BACKUP_ROOT}', cannot backup"
+  error "No backup root at '${BACKUP_ROOT}', cannot backup"
 else
   BACKUP_DIR="${BACKUP_ROOT}/$(date +'%Y-%m-%d')"
   log "Backing up to '${BACKUP_DIR}'"
@@ -24,9 +24,6 @@ else
     | bzip2 --stdout \
     > "${BACKUP_DIR}/HALFYAK_ETC_SQLITE_HISTORY_DB.dump.bz2"
   [[ 0 -eq "${#pipestatus:#0}" ]]
-
-  tar -ca -f "${BACKUP_DIR}/dot-config.tar.bz2" -C "${HOME}/.config" \
-    1Password karabiner
 
   cp "${HOME}/.docker/config.json" "${BACKUP_DIR}/docker-config.json"
 

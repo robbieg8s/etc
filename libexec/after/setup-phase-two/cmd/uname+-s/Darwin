@@ -29,9 +29,39 @@
   noglob "${HALFYAK_ETC}"/libexec/link-config ~/Library/LaunchAgents/ "${launchd_plists_expanded}"/*.plist
 }
 
+# Point ~/cloud to a machine specific subdirectory of iCloud Documents
+() {
+  local spJson="${1:?}"
+  system_profiler -json SPHardwareDataType > "${spJson}"
+  local serial
+  serial="$(jq --raw-output '.SPHardwareDataType[0].serial_number' < "${spJson}")"
+  local cloudRoot="${HOME}/Documents/etc/local/${serial}"
+  mkdir -p "${cloudRoot}"
+  if [[ -e ~/cloud ]]
+  then
+    local target
+    target="$(readlink ~/cloud)"
+    if [[ "${target}" != "${cloudRoot}" ]]
+    then
+      printf '~/cloud -> %s != %s\n' "${(q+)target}" "${(q+)cloudRoot}"
+      exit 1
+    fi # it already points to the right place
+  else
+    ln -s "${cloudRoot}" ~/cloud
+  fi
+} =(true)
+
 # Make the dock pop out take 10 seconds (i really rarely use it)
-defaults write com.apple.dock autohide-delay -int 10
-killall Dock
+() {
+  # Make it idempotent to avoid killall flickering the Dock if we don't need it
+  local delay=10
+  set -- com.apple.dock autohide-delay
+  if [[ "$(defaults read "$@")" != "${delay}" ]]
+  then
+    defaults write "$@" -int "${delay}"
+    killall Dock
+  fi
+}
 
 # Make Cmd+W on the last tab close tab (i.e. nothing) rather than close window
 # You might need to re do this in System Settings -> Keyboard -> Keyboard Shortcuts... -> App Shortcuts
