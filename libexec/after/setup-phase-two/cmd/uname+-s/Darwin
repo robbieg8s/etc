@@ -63,6 +63,11 @@
   fi
 }
 
+# Audit various system settings. These are best set via UI, but this ensures i don't forget any
+# Run this as a separate script because it's convenient to test it isolated when adding stuff,
+# and it's intricate enough i want it isolated so it can use intermediate settings etc.
+"${HALFYAK_ETC}"/libexec/Darwin/audit-system-settings
+
 # Make Cmd+W on the last tab close tab (i.e. nothing) rather than close window
 # You might need to re do this in System Settings -> Keyboard -> Keyboard Shortcuts... -> App Shortcuts
 # Or restart Safari - i'm not sure the defaults write works.

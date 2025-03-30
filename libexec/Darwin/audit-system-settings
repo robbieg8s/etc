@@ -1,0 +1,48 @@
+#!/bin/zsh -ef
+
+log() {
+  local fmt="${1:?}"
+  shift
+  print -f "$fmt\n" -- "$@"
+}
+
+fail() {
+  log "$@"
+  exit 1
+}
+
+errors=0
+
+checkKeyEquivalent() {
+  local pbsJson="${1:?}"
+  local service="${2:?}"
+  local value="${3:?}"
+  local name="${4:?}"
+  local setting="${5:?}"
+  local servicesJq='.pbs.NSServicesStatus[$service].key_equivalent // empty'
+  local check
+  # We don't use --raw-output here, to make it easier to discern "" from nothing
+  check="$(jq --arg service "${service}" "${servicesJq}" < "${pbsJson}")"
+  [[ "${check}" == "${value}" ]] || {
+      log 'Shortcut for "%s" set to %s != %s\n' "${name}" "${(q+)check:-default}" "${(q+)value}"
+      log ":; open 'x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts'"
+      log 'In Services tab, under Text in right hand pane, set shortcut for "%s" to %s' "${name}" "${setting}"
+      log ' '
+      ((errors += 1))
+  }
+}
+
+() {
+  local pbsJson="${1:?}"
+  defaults-json pbs > "${pbsJson}"
+  # This one i just disabled because it's near the other one and i use Dash for this kind of thing
+  checkKeyEquivalent "${pbsJson}" \
+    'com.apple.Terminal - Open man Page in Terminal - openManPage' '""' \
+    'Open man Page in Terminal' 'none'
+  # This one i just disabled because it clashes with the default "find action" in JetBrains IDEs
+  checkKeyEquivalent "${pbsJson}" \
+    'com.apple.Terminal - Search man Page Index in Terminal - searchManPages' '""' \
+    'Search man Page Index in Terminal' 'none'
+} =(true)
+
+[[ "${errors}" -eq 0 ]] || fail "Audit failed - see above"
