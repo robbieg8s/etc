@@ -24,7 +24,7 @@ checkKeyEquivalent() {
   # We don't use --raw-output here, to make it easier to discern "" from nothing
   check="$(jq --arg service "${service}" "${servicesJq}" < "${pbsJson}")"
   [[ "${check}" == "${value}" ]] || {
-      log 'Shortcut for "%s" set to %s != %s\n' "${name}" "${(q+)check:-default}" "${(q+)value}"
+      log 'Shortcut for "%s" set to %s != %s' "${name}" "${(q+)check:-default}" "${(q+)value}"
       log ":; open 'x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts'"
       log 'In Services tab, under Text in right hand pane, set shortcut for "%s" to %s' "${name}" "${setting}"
       log ' '
@@ -50,9 +50,9 @@ checkKeyEquivalent() {
   defaults-json com.apple.Safari > "${safariJson}"
   # This hack makes Cmd+W still Close Tab even for the last unpinned tab, which avoids closing the window (and
   # the pinned tabs) when i close the last unpinned tab.
-  check="$(jq '.["com.apple.Safari"].NSUserKeyEquivalents.["Close Tab"]' < "${safariJson}")"
+  check="$(jq '.["com.apple.Safari"].NSUserKeyEquivalents.["Close Tab"] // empty' < "${safariJson}")"
   [[ "${check}" == '"@w"' ]] || {
-      log 'Shortcut for Safari Close Tab set to %s not Cmd+W\n' "${(q+)check:-default}"
+      log 'Shortcut for Safari Close Tab set to %s not Cmd+W' "${(q+)check:-default}"
       log ":; open 'x-apple.systempreferences:com.apple.Keyboard-Settings.extension?Shortcuts'"
       log 'In App Shortcuts tab, use + to add application Safari.app, Menu title "Close Tab", Keyboard shortcut Cmd+W'
       log ' '
