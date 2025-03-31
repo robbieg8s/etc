@@ -1,0 +1,15 @@
+#!/bin/zsh -ef
+
+# Install via
+# ln -s ~/etc/git/hooks/pre-push-ensure-pristine .git/hooks/pre-push
+# assuming no conflicting hooks
+
+# Consume data on stdin - lines of the form:
+# <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+# since we don't want it to end up on stderr with the git-pristine output
+cat > /dev/null
+
+# git-pristine uses stdout, but git hooks errors are on stderr
+1>&2
+
+exec "${HOME}/bin/git-pristine" "$@"
