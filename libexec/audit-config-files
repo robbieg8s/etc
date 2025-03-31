@@ -1,0 +1,31 @@
+#!/bin/zsh -ef
+
+# These are files i don't want to backup or version control for whatever reason,
+# but do want to assert (facts about) the contents of.
+
+log() {
+  local fmt="${1:?}"
+  shift
+  print -f "$fmt\n" -- "$@"
+}
+
+fail() {
+  log "$@"
+  exit 1
+}
+
+errors=0
+
+DOCKER_CONFIG=~/.docker/config.json
+DOCKER_CREDHELPERS_EXPECT='{"credHelpers":{"quay.io":"1password"}}'
+DOCKER_CREDHELPERS_ACTUAL="$(jq --compact-output '{ credHelpers }' "${DOCKER_CONFIG}")"
+[[ "${DOCKER_CREDHELPERS_EXPECT}" == "${DOCKER_CREDHELPERS_ACTUAL}" ]] || {
+  log 'Docker config credHelpers incorrect'
+  log 'Expect %s' "$(jq . <<<"${DOCKER_CREDHELPERS_EXPECT}")"
+  log 'Actual %s' "$(jq . <<<"${DOCKER_CREDHELPERS_ACTUAL}")"
+  log ':; vi %s' "${(q+)DOCKER_CONFIG}"
+  log ' '
+  ((errors += 1))
+}
+
+[[ "${errors}" -eq 0 ]] || fail "Audit failed (${errors} errors) - see above"
