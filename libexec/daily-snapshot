@@ -25,4 +25,6 @@ else
     mkdir -p "${snapshot}"
     git -C "${dir}" config get remote.origin.url > "${snapshot}/remote.origin.url"
   done
+
+  asdf list > "${SNAPSHOT_ROOT}/asdf"
 fi
