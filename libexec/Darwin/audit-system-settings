@@ -60,6 +60,4 @@ checkKeyEquivalent() {
   }
 } =(true)
 
-
-
 [[ "${errors}" -eq 0 ]] || fail "Audit failed (${errors} errors) - see above"
