@@ -63,6 +63,14 @@
   fi
 }
 
+# I need to be in group mail to use mutt to modify mail
+# I'm not sure why /usr/bin/mail doesn't need this, i'm guessing something SIP?
+# In any case, this seems safe, and seems to work
+dseditgroup -o checkmember -m "${USER}" mail > /dev/null || {
+  printf 'About to use dseditgroup to add %s to group mail, and this requires your password.\n' "${USER}"
+  dseditgroup -o edit -u "${USER}" -p -a "${USER}" -t user mail
+}
+
 # Audit various system settings. These are best set via UI, but this ensures i don't forget any
 # Run this as a separate script because it's convenient to test it isolated when adding stuff,
 # and it's intricate enough i want it isolated so it can use intermediate settings etc.
