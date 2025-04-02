@@ -1,0 +1,4 @@
+# These only complete the main argument, not options, but that's often what i want
+# I've not yet been able to get options working also (the way the git ones work)
+compdef _docker docker-sh=_docker_complete_images
+compdef _docker docker-enter=_docker_complete_running_containers

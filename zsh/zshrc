@@ -101,3 +101,5 @@ autoload -U +X compinit && compinit
 # that shadow executables, but seems reasonable enough to just do in general.
 unalias -a
 source "${ETC_ZSH_DIR}"/aliases
+# Also include some additional completions
+source "${ETC_ZSH_DIR}"/completions
