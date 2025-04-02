@@ -23,11 +23,12 @@ then
   dir="${file:A:h}"
   until [[ "${dir}" -ef / ]]
   do
+      [[ -e "${dir}/package.json" ]] && { packageJsonDir="${dir}" ; }
       [[ -e "${dir}/${dir:t}.sln" ]] && {
           # Looks like a rider project
           exec open -nb com.jetbrains.rider --args ${line+--line} ${line+"${line}"} "${file}"
       }
-      [[ -e "${dir}/.idea" && -e "${dir}/package.json" ]] && {
+      [[ -e "${dir}/.idea" && -n "${packageJsonDir}" ]] && {
           # Looks like a webstorm project
           exec open -nb com.jetbrains.webstorm --args ${line+--line} ${line+"${line}"} "${file}"
       }
