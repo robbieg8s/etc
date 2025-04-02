@@ -1,0 +1,13 @@
+#!/bin/zsh -ef
+
+# This script is an experiment in getting the clipboard into shells in docker
+# containers without it ending up in the history in the container. It prints
+# the command to run inside the container. The idea is you can copy the command
+# output and paste it into the container instead. There's probably race conditions
+# here, but it's worth experimenting.
+
+() {
+  local out="${1:?}"
+  print 'source <(nc -w 1 host.docker.internal 1729 | tr -d "\\r")'
+  pbpaste | nc -b lo0 -l 1729
+} =(true)
