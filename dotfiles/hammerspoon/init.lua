@@ -90,6 +90,8 @@ end
 function audioBatcher:fire()
     self.selectedInput:setDefaultInputDevice()
     self.selectedOutput:setDefaultOutputDevice()
+    -- Ensure system sounds also go to the selected device
+    self.selectedOutput:setDefaultEffectDevice()
     self:alert("🎙 " ..  hs.audiodevice.defaultInputDevice():name() .. "\n🔊 " ..  hs.audiodevice.defaultOutputDevice():name())
 end
 function audioBatcher:init()
