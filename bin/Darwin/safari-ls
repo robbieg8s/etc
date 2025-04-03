@@ -1,0 +1,34 @@
+#!/usr/bin/osascript -lJavaScript
+function run(argv) {
+    const getApplication = name => {
+        try {
+            return new Application(name);
+        } catch {
+            return null;
+        }
+    };
+    const tabData = () =>
+        ['Safari', 'Safari Technology Preview'].flatMap(name => {
+            const application = getApplication(name);
+            if (!application) {
+                return [];
+            } else if (!application.running()) {
+                // We need to short circuit this case, otherwise osascript
+                // launches the app to get the windows (!?)
+                return [];
+            } else {
+                return application.windows().flatMap(window =>
+                    window.tabs().map(tab => ({
+                        title: tab.name(),
+                        // Note that url here can be null
+                        // This happens when a tab is unloaded, presumably for power or memory load reduction
+                        url: tab.url()
+                    }))
+                );
+            }
+        });
+
+    // null => no replacement / allowlisting for properties
+    // 2 => indent for stringification
+    return JSON.stringify(tabData(), null, 2);
+}
