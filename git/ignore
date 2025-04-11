@@ -1,3 +1,6 @@
 .DS_Store
 /.idea/
 /.venv/
+# This is the file i use to prepare longer commit messages, it matches
+# the git name for transient commit messages so i get vi filetype magic.
+/COMMIT_EDITMSG
