@@ -48,6 +48,7 @@ checkKeyEquivalent() {
 () {
   local safariJson="${1:?}"
   defaults-json com.apple.Safari > "${safariJson}"
+  local check
   # This hack makes Cmd+W still Close Tab even for the last unpinned tab, which avoids closing the window (and
   # the pinned tabs) when i close the last unpinned tab.
   check="$(jq '.["com.apple.Safari"].NSUserKeyEquivalents.["Close Tab"] // empty' < "${safariJson}")"
@@ -57,6 +58,44 @@ checkKeyEquivalent() {
       log 'In App Shortcuts tab, use + to add application Safari.app, Menu title "Close Tab", Keyboard shortcut Cmd+W'
       log ' '
       ((errors += 1))
+  }
+} =(true)
+
+JQ_CHECK_CURSOR_SETTINGS="$(<<'END_JQ'
+.["com.apple.universalaccess"]
+| . as { $cursorOutline, $cursorFill, $mouseDriverCursorSize }
+| [ if $mouseDriverCursorSize == 2.5
+    then empty
+    else "Pointer size is not middle tick"
+    end
+  , if $cursorOutline == {red: 0.32369780539999998, green: 0.1063579395, blue: 0.574860394, alpha: 1}
+    then empty
+    else "Pointer outline colour is not pencil Eggplant"
+    end
+  , if $cursorFill == {red: 1, green: 0.57810515169999999, blue:0, alpha:1}
+    then empty
+    else "Pointer fill colour is not pencil Tangerine"
+    end
+  ]
+| map("\(.)\n") | join("")
+END_JQ
+)"
+
+() {
+  local universalAccessJson="${1:?}"
+  defaults-json com.apple.universalaccess > "${universalAccessJson}"
+  local cursorErrors
+  cursorErrors=(${(f)"$(jq --raw-output --from-file <(<<<"${JQ_CHECK_CURSOR_SETTINGS}") < "${universalAccessJson}")"})
+  [[ "${#cursorErrors}" -eq 0 ]] || {
+
+      local line
+      log "Pointer settings (mouse cursor) are not correct:"
+      for line in "${(@)cursorErrors}"
+      do
+        log '%s' "${line}"
+      done
+      log ":; open 'x-apple.systempreferences:com.apple.preference.universalaccess?pointer'"
+      ((errors += ${#cursorErrors}))
   }
 } =(true)
 
