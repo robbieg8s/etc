@@ -64,7 +64,7 @@ function run(argv) {
     ].map(pasteboardType => pasteboardType.js).sort().join('\n');
   } else if ('list' === command) {
     if (0 != commandArgs.length) {
-      usage('show command does not take arguments');
+      usage('list command does not take arguments');
     } else {
       const pasteboardItems = $.NSPasteboard.generalPasteboard.pasteboardItems;
       if (!pasteboardItems) {
