@@ -2,3 +2,8 @@
 # I've not yet been able to get options working also (the way the git ones work)
 compdef _docker docker-sh=_docker_complete_images
 compdef _docker docker-enter=_docker_complete_running_containers
+
+# The ergonomics of this aren't great - it only works if you use git-merge-work directly,
+# and not if you use git's built in plugin mechanism via git merge-rework. Still useful for
+# avoiding retyping to complex temporary branch names.
+compdef _git git-merge-rework=git-merge
