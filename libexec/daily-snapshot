@@ -27,4 +27,14 @@ else
   done
 
   asdf list > "${SNAPSHOT_ROOT}/asdf"
+
+  mkdir -p "${SNAPSHOT_ROOT}/alfredapp"
+  rsync --checksum --delete --links --recursive \
+    ~/"Library/Application Support/Alfred/Alfred.alfredpreferences"/ \
+    "${SNAPSHOT_ROOT}/alfredapp/Alfred.alfredpreferences"/
+
+  mkdir -p "${SNAPSHOT_ROOT}/iterm"
+  rsync --checksum --delete --links --recursive \
+    ~/"Library/Preferences/com.googlecode.iterm2.plist" \
+    "${SNAPSHOT_ROOT}/iterm/com.googlecode.iterm2.plist"
 fi
