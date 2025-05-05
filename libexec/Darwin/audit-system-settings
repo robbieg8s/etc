@@ -75,8 +75,43 @@ validateDefaultsWithJq() {
 
 JQ_SAFARI="$(<<'END_JQ'
 .["com.apple.Safari"]
-| . as { $IncludeDevelopMenu, $NSUserKeyEquivalents }
-| [ if $IncludeDevelopMenu
+| . as
+  { $AutoFillCreditCardData
+  , $AutoFillFromAddressBook
+  , $AutoFillMiscellaneousForms
+  , $AutoFillPasswords
+  , $IncludeDevelopMenu
+  , $NSUserKeyEquivalents
+  }
+| [ if $AutoFillCreditCardData | not
+    then empty
+    else
+      [ "Safari Credit Card AutoFill is not disabled"
+      , "Safari Settings, AutoFill Tab, uncheck 'Credit cards'"
+      ]
+    end
+  , if $AutoFillFromAddressBook | not
+    then empty
+    else
+      [ "Safari Contacts AutoFill is not disabled"
+      , "Safari Settings, AutoFill Tab, uncheck 'Using information from my contacts'"
+      ]
+    end
+  , if $AutoFillMiscellaneousForms | not
+    then empty
+    else
+      [ "Safari Miscellaneous AutoFill is not disabled"
+      , "Safari Settings, AutoFill Tab, uncheck 'Other forms'"
+      ]
+    end
+  , if $AutoFillPasswords | not
+    then empty
+    else
+      [ "Safari Passwords AutoFill is not disabled"
+      , "Safari Settings, AutoFill Tab, uncheck 'Usernames and passwords'"
+      ]
+    end
+  , if $IncludeDevelopMenu
     then empty
     else
       [ "Safari Develop Menu not enabled"
