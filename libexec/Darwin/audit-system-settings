@@ -130,6 +130,18 @@ JQ_SAFARI="$(<<'END_JQ'
         ]
       end
     )
+  , if .["ExtensionsToolbarConfiguration PrivateBrowsingBrowserStandaloneTabBarToolbarIdentifier-v1"]
+      .["OrderedToolbarItemIdentifiers"]
+      | any(. == "WebExtension-com.1password.safari.extension (2BUA8C4S2C)")
+    # This check is really poor - it flags the first time, but doesn't seem sensitive to later changes. Afaics
+    # nothing in defaults com.apple.Safari changes for subsequent toggles. However, until i find a better way,
+    # this will at least smooth new machine setup.
+    then empty
+    else
+      [ "1Password not enabled in private browsing"
+      , "Safari Settings, Extensions Tab, 1Password For Safari in left pane, check 'Allow in Private Browsing'"
+      ]
+    end
   ]
 | map("\(.[])\n") | join("")
 END_JQ
