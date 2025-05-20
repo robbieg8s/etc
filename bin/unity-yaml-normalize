@@ -1,0 +1,32 @@
+#!/usr/bin/awk -f
+# This script is an emprically driven normalizer to convert YAML i've encountered
+# in Unity projects i'm working on to something that yq can understand, so that i
+# can perform operations such as data extraction or renomalized diffs.
+# Documentation:
+# https://unity.com/blog/engine-platform/understanding-unitys-serialization-language-yaml
+# https://mikefarah.gitbook.io/yq
+# https://yaml.org/spec/1.1/current.html
+
+BEGIN {
+  # Some files have CRLFs, so permit CRLF of LF as a record separator
+  RS="\r?\n"
+}
+
+/^%TAG !u! tag:unity3d.com,2011:$/ {
+  # Capture the unity TAG directive
+  unityTagDirective = $0
+  # We also suppress it for now, it will be emitted each document
+  next
+}
+
+/^--- !u![^ ]* &[^ ]*/ {
+  # Document start, we print the TAG directive as yq seems to need it per document
+  print unityTagDirective
+  # Also print only the first three fields for the document, since unity can add extra
+  # metadata like 'stripped' at EOL here which yq doesn't accept
+  print $1, $2, $3
+  next
+}
+
+# Pass through remaining content
+{ print }
