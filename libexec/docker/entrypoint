@@ -9,7 +9,9 @@ set -e
 # if run immediately after a cache clear.
 
 ln -fns /var/cache/apk /etc/apk/cache
+apk add curl
 apk add git
+apk add jq
 apk add ncurses
 apk add ripgrep
 apk add sqlite

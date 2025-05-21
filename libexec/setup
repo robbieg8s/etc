@@ -21,6 +21,9 @@ ln -fns ~/etc/bin ~/bin
 mkdir -p ~/src
 mkdir -p ~/tmp
 mkdir -p ~/var/log
+# This script (or things it calls) is first to want these in a clean install (e.g. in docker)
+mkdir -p ~/.config
+mkdir -p ~/.ssh
 
 # Dotfiles maintained via symlinks to etc
 
