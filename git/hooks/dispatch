@@ -1,0 +1,24 @@
+#!/bin/zsh -ef
+
+# Install via
+# ln -s ~/etc/git/hooks/dispatch .git/hooks/pre-push
+# and place links to hooks under .git/hooks/pre-push.d
+
+HOOK_DIR="$0.d"
+
+[[ -d "${HOOK_DIR}" ]] || {
+  print -u2 -f 'Cannot find hook directory %s\n' "${HOOK_DIR}"
+  exit 1
+}
+
+() {
+  local pushData="${1:?}"
+  shift
+  # Capture the push data so we can repeat it per hook
+  cat > "${pushData}"
+  for hook in "${HOOK_DIR}"/*
+  do
+    # Invoke each hook forwarding arguments and push data
+    "${hook}" "$@" < "${pushData}"
+  done
+} =(true) "$@"

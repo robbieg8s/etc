@@ -1,0 +1,34 @@
+#!/bin/zsh -ef
+
+local remote="${1:?}"
+
+# Stdin has lines of the form:
+# <local-ref> SP <local-object-name> SP <remote-ref> SP <remote-object-name> LF
+while read localRef localObjectName remoteRef remoteObjectName
+do
+  if [[ "${localObjectName}" =~ ^0*$ ]]
+  then
+    # Deleting a remote ref, nothing to block
+    continue
+  else
+    local range="${localObjectName}"
+    if [[ ! "${remoteObjectName}" =~ ^0*$ ]]
+    then
+      range="${remoteObjectName}..${range}"
+    else
+      # new branch, check commits not on remote main
+      # this might over-estimate what we are pushing, but shouldn't miss anything
+      local remoteMain
+      remoteMain="$(git symbolic-ref refs/remotes/"${remote}"/HEAD)"
+      range="${remoteMain}..${range}"
+    fi
+    git log --format='%H %s' "${range}" | while read commit subject
+    do
+      if [[ "${subject}" == 'yolo' ]]
+      then
+        print -u2 -f 'Cannot push yolo commit %s\n' "${commit}"
+        exit 1
+      fi
+    done
+  fi
+done
