@@ -2,6 +2,13 @@
 # Driver for saving history to a sqlite database and querying it
 # This script is invoked from zshaddhistory_functions, so use -f to reduce overhead
 # If it becomes noticeable that part could be made into a shell function
+#
+# Last time I switched machines, I imported my old history from a backup via
+# :; bzcat ~/Downloads/HALFYAK_ETC_SQLITE_HISTORY_DB.dump.bz2 > history.dump
+# :; sqlite3 history.db < history.dump
+# :; sqlite3 "${HALFYAK_ETC_SQLITE_HISTORY_DB}"
+# sqlite> attach database 'history.db' as old_history;
+# sqlite> insert into raw_history select * from old_history.raw_history;
 
 set -e
 
