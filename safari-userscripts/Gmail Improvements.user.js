@@ -21,7 +21,7 @@
       // Bitbucket has a bit of an array of link texts in use ...
       ...makeMatchers('bitbucket.org', 'View this pull request', 'View commit', 'View this commit', 'View all commits'),
       // As does Confluence ...
-      ...makeMatchers('atlassian.net', 'View page', 'View blog post', 'View full blog')
+      ...makeMatchers('atlassian.net', 'View page', 'View blog post', 'View full blog', 'View work item')
     ].some(({ domain, xpath }) => {
       const xpathResults = document.evaluate(xpath, document);
       let node = null;
