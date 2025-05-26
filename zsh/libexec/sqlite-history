@@ -63,7 +63,9 @@ sqlite_history_select_where_like() {
   shift
   # Join and surround with % for convenient multiterm LIKE, then escape for SQL
   local escaped_args="$(sqlite_escape "%${(j:%:)@}%")"
-  sqlite_history_select "WHERE ${column} LIKE '${escaped_args}'"
+  # If databases have been merged we need to sort with ORDER BY, noting that since we dump everything
+  # we want the most recent history at the end out the output where i'll see it - hence ASC.
+  sqlite_history_select "WHERE ${column} LIKE '${escaped_args}'" 'ORDER BY timestamp ASC'
 }
 
 sqlite_history_verb_init() {
