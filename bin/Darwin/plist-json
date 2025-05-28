@@ -1,0 +1,48 @@
+#!/bin/zsh -ef
+
+# Convert given plists (or stdin) to json handling both (a) date and data elements which plutil can't jsonify,
+# and (b) safely invoking plutil so i don't accidentally convert a plist in place.
+ 
+# This should be reunified with defaults-json
+
+[[ $# -ne 0 ]] || set -- -
+
+for plist in "$@"
+do
+  # The temporary file via cat is both (a) to insulate plutil from the real file since it can convert in place and this
+  # is easy to mess up, and (b) to handle the stdin case seamlessly.
+  # The `tr` is because i've seen nulls in plists in the wild (which xsltproc can't parse) - for example from iTerm defaults
+  plutil -convert xml1 -o - =(cat "${plist}") | tr -d '\0' | xsltproc --nonet --novalid =(cat<<'END_XSL'
+<xsl:stylesheet version="1.0"
+xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+  <xsl:output
+    doctype-public="-//Apple//DTD PLIST 1.0//EN"
+    doctype-system="http://www.apple.com/DTDs/PropertyList-1.0.dtd"
+    encoding="UTF-8"
+    indent="yes"
+  />
+
+  <!-- By default, copy everything through. -->
+  <xsl:template match="node()|@*">
+    <xsl:copy>
+      <xsl:apply-templates select="node()|@*"/>
+    </xsl:copy>
+  </xsl:template>
+
+  <!--
+    The Plist XML format uses date and data elements, which plutil refuses to convert to JSON. Since they're
+    just strings anyway (with ISO8610 resp. Base64 encoding), just convert them to strings. Yes, this is
+    losing information, but that's fine for my use case. If this becomes a problem, rewriting their values to
+    a dictionary with keys for type and value is probably not too hard, and is collision free and reversible.
+  -->
+  <xsl:template match="date|data">
+    <string>
+      <xsl:value-of select="."/>
+    </string>
+  </xsl:template>
+</xsl:stylesheet>
+END_XSL
+  # Then use plutil to convert plist -> json
+    ) - | plutil -convert json -o - -
+  [[ 0 -eq "${#pipestatus:#0}" ]]
+done

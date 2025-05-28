@@ -1,15 +1,17 @@
 #!/bin/zsh -ef
 
-# Read the macos defaults for a domain and render as json The read is done via defaults export, because it
+# Read the macos defaults for a domain and render as json. The read is done via defaults export, because it
 # produces easily parseable output.  Note `defaults export` is undocumented by `defaults(1)`, but `defaults
 # -help` mentions it.
+#
+# This should be reunified with plist-json
 
 # Unlike defaults read, defaults export requires a domain.
 domain="${1:?}"
 
-# The `tr` is because i've seen nulls in the output (which xsltproc chokes on) - for example from iTerm
-# https://groups.google.com/g/iterm2-discuss/c/k7XL5-BxEvE/m/L7Dp-bSJAgAJ defaults emits the xml form when
-# writing to stdout, which can santize using xsltproc
+# The `tr` is because i've seen nulls in the output (which xsltproc can't parse) - for example from iTerm
+# https://groups.google.com/g/iterm2-discuss/c/k7XL5-BxEvE/m/L7Dp-bSJAgAJ
+# Note that defaults emits the xml form when writing to stdout, which can we sanitize using xsltproc
 defaults export "${domain}" - | tr -d '\0' | xsltproc --nonet --novalid =(cat<<'END_XSL'
 <xsl:stylesheet version="1.0"
 xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
