@@ -26,25 +26,29 @@
     }
   };
 
+  const notificationCountId = 'atlassian-navigation-notification-count';
+  const hideNotification = (node) => {
+    // Hide the node (vs removal) so we don't break the bell
+    node.style.display = 'none';
+    console.log('Atlassian Improvements hiding Notification ', node);
+  };
+
   (new MutationObserver((mutations, observer) => {
     // The upgrade button has moved around, so just always remove it
     removeUpgradeButton();
     mutations
-      .filter(mutation => 'atlassian-navigation-notification-count' == mutation.target.getAttribute('id'))
+      .filter(mutation => notificationCountId == mutation.target.getAttribute('id'))
       .forEach(mutation => {
         // This needs to be tested on team.atlassian.com.
         Array.from(mutation.addedNodes)
-          .forEach(addedNode => {
-            // Hide the node (vs removal) so we don't break the bell
-            addedNode.style.display = 'none';
-            console.log('Atlassian Improvements hiding Notification ', addedNode);
-          });
+          .forEach(hideNotification);
       });
   }))
     // Observe the whole document, as it gets rebuilt after load. Recent confluence navigation update have remove
     // AtlasKit id elements which were previously useful for wayfinding.
     .observe(document.getRootNode(), { childList: true, subtree: true });
-  // Just in case we installed our mutation observer too late
+  // Just in case we installed our mutation observers too late
   removeUpgradeButton();
+  hideNotification(document.getElementById(notificationCountId));
   console.log('Atlassian Improvements is at your service');
 })();
