@@ -36,13 +36,13 @@
   (new MutationObserver((mutations, observer) => {
     // The upgrade button has moved around, so just always remove it
     removeUpgradeButton();
-    mutations
-      .filter(mutation => notificationCountId == mutation.target.getAttribute('id'))
-      .forEach(mutation => {
-        // This needs to be tested on team.atlassian.com.
-        Array.from(mutation.addedNodes)
-          .forEach(hideNotification);
-      });
+    // I've been unable to get a reliable filter to avoid doing this every
+    // mutation, so just look up by id each time.
+    // Also, this is untested on team.atlassian.com.
+    const notificationCount = document.getElementById(notificationCountId);
+    if (notificationCount && notificationCount.style.display != 'none') {
+      hideNotification(notificationCount);
+    }
   }))
     // Observe the whole document, as it gets rebuilt after load. Recent confluence navigation update have remove
     // AtlasKit id elements which were previously useful for wayfinding.
