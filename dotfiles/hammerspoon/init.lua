@@ -252,6 +252,16 @@ function normalizeWindow(screen, window)
     end,
     ["com.1password.1password"] = smallerUpperRight,
     ["com.apple.MobileSMS"] = right1280,
+    ["com.apple.Terminal"] = function()
+      -- Apple Terminal
+      -- I have this configured for escalation for running unsigned binaries etc, this placement is
+      -- ad hoc based on current font choice and avoiding interfering with iTerm.
+      local width = 768
+      local height = 768
+      frame.x = frame.x2 - width
+      frame.w = width
+      frame.h = height
+    end,
     ["com.apple.reminders"] = smallerUpperRight,
     ["com.kapeli.dashdoc"] = right1280,
     ["com.tinyspeck.slackmacgap"] = right1280,
