@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+# Emit the value of a fresh `traceparent` header per https://www.w3.org/TR/trace-context-1/#traceparent-header
+# In future, we should provide a way to optionally contextually provide received traceparent so we can
+# implement https://www.w3.org/TR/trace-context-1/#a-traceparent-is-received
+# An option for emitting the whole http header would be nice too
+# A mechanism for saving the id would be nice too, for now it is expected curl --verbose or similar is used
+
+# NB: Darwin uuidgen is capitalized, alpine is not. Both contain hyphens.
+traceId="${(L)$(uuidgen)//-/}"
+parentId="$(printf '%08x%08x' "$(date -u "+%s")" "$$")"
+printf '00-%s-%s-00\n' "${traceId}" "${parentId}"
