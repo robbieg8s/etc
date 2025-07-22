@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+# I've had to search this one too many times
+
+exec aws sts get-caller-identity
