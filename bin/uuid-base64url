@@ -1,0 +1,5 @@
+#!/bin/zsh
+
+# Print a new uuid in base64url format, eliding padding since length is fixed
+
+print "${(U)$(uuidgen)//-/}" | xxd -r -p | base64 | tr '+/' '-_' | tr -d '='
