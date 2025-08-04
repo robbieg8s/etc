@@ -4,3 +4,6 @@
 # This is the file i use to prepare longer commit messages, it matches
 # the git name for transient commit messages so i get vi filetype magic.
 /COMMIT_EDITMSG
+# I use this for workspace specific transient files for docker dev images.
+# It is possibly a little generic, but it has a lot of muscle memory.
+/tmp/
