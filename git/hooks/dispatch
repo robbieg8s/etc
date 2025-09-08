@@ -4,6 +4,8 @@
 # () { ln -s ~/etc/git/hooks/dispatch .git/hooks/$1 ; mkdir -p .git/hooks/$1.d } ${HOOK:?}
 # where HOOK is the name of the hook, for example pre-push
 
+zmodload zsh/datetime
+
 export HALFYAK_ETC_GIT_HOOKS_DISPATCH_NAME="${0:t}"
 HOOK_DIR="$0.d"
 
@@ -11,6 +13,10 @@ HOOK_DIR="$0.d"
   print -u2 -f 'Cannot find hook directory %s\n' "${HOOK_DIR}"
   exit 1
 }
+
+#export GIT_TRACE=1
+#export GIT_TRANSFER_TRACE=1
+#export GIT_CURL_VERBOSE=1
 
 () {
   local stdinData="${1:?}"
@@ -20,6 +26,9 @@ HOOK_DIR="$0.d"
   for hook in "${HOOK_DIR}"/*
   do
     # Invoke each hook forwarding arguments and stdin data
+    local start="${EPOCHREALTIME}"
     "${hook}" "$@" < "${stdinData}"
+    local elapsed="$((EPOCHREALTIME - start))"
+    print -u2 -f 'Hook %s took %.2f s\n' "${hook}" "${elapsed}"
   done
 } =(true) "$@"
