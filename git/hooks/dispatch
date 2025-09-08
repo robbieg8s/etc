@@ -1,9 +1,10 @@
 #!/bin/zsh -ef
 
 # Install via
-# ln -s ~/etc/git/hooks/dispatch .git/hooks/pre-push
-# and place links to hooks under .git/hooks/pre-push.d
+# () { ln -s ~/etc/git/hooks/dispatch .git/hooks/$1 ; mkdir -p .git/hooks/$1.d } ${HOOK:?}
+# where HOOK is the name of the hook, for example pre-push
 
+export HALFYAK_ETC_GIT_HOOKS_DISPATCH_NAME="${0:t}"
 HOOK_DIR="$0.d"
 
 [[ -d "${HOOK_DIR}" ]] || {
@@ -12,13 +13,13 @@ HOOK_DIR="$0.d"
 }
 
 () {
-  local pushData="${1:?}"
+  local stdinData="${1:?}"
   shift
-  # Capture the push data so we can repeat it per hook
-  cat > "${pushData}"
+  # Capture stdin data so we can repeat it per hook
+  cat > "${stdinData}"
   for hook in "${HOOK_DIR}"/*
   do
-    # Invoke each hook forwarding arguments and push data
-    "${hook}" "$@" < "${pushData}"
+    # Invoke each hook forwarding arguments and stdin data
+    "${hook}" "$@" < "${stdinData}"
   done
 } =(true) "$@"

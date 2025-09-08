@@ -1,0 +1,6 @@
+#!/bin/sh -e
+
+# Install from a git lfs using repo via
+# () { for hook in "$@"; do ln -s ~/etc/git/hooks/git-lfs .git/hooks/${hook}.d/git-lfs ; done; } post-checkout post-commit post-merge pre-push
+
+exec git lfs "${HALFYAK_ETC_GIT_HOOKS_DISPATCH_NAME:?}" "$@"
