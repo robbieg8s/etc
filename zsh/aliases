@@ -38,6 +38,10 @@ gd() {
   git diff "$@"
 }
 compdef _git gd=git-diff
+gdno() {
+  git diff --name-only "$@"
+}
+compdef _git gdno=git-diff
 gds() {
   git diff --staged "$@"
 }
@@ -60,6 +64,12 @@ gm() {
   git merge "$@"
 }
 compdef _git gm=git-merge
+# Note: insert options before branch (no expected usage, just a guess based on glom)
+gmom() {
+  git merge "$@" origin/main
+}
+compdef _git gmom=git-merge
+# Complete as if origin/main wasn't there, since options are inserted ahead of it
 gp() {
   git pull "$@"
 }
@@ -77,6 +87,10 @@ gv() {
   git show "$@"
 }
 compdef _git gv=git-show
+gvno() {
+  git show --name-only "$@"
+}
+compdef _git gvno=git-show
 gw() {
   git web "$@"
 }
