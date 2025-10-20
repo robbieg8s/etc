@@ -69,7 +69,7 @@ sqlite_history_select_where_like() {
 }
 
 sqlite_history_verb_init() {
-  local expect_schema='CREATE TABLE raw_history(command text, pwd text, timestamp integer, session text);'
+  local expect_schema=$'.schema\nCREATE TABLE raw_history(command text, pwd text, timestamp integer, session text);'
   if [[ -e "${history_database}" ]]
   then
       actual_schema="$(sqlite_history .schema)"
