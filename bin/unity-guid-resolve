@@ -1,0 +1,39 @@
+#!/bin/zsh -ef
+
+[[ $# == 1 ]] || {
+  print -u 2 -f 'Usage: %s guid\n' "$0"
+  exit 1
+}
+
+guid="${1:?}"
+
+if [[ -z "${HALFYAK_UNITY_EDITOR_ROOT}" ]]
+then
+  case "$(uname -s)" in
+    Darwin)
+      HALFYAK_UNITY_EDITOR_ROOT=/Applications/Unity/Hub/Editor
+      ;;
+    *)
+      print -u 2 -f "Cannot infer HALFYAK_UNITY_EDITOR_ROOT, set it or fix me\n"
+      exit 1
+      ;;
+  esac
+# else use the environment specified one
+fi
+
+[[ "${guid}" =~ [[:xdigit:]]{32} ]] || {
+  print -u 2 -f 'Usage: %s guid\n  %s is not a guid\n' "$0" "${guid}"
+  exit 1
+}
+
+# Notes on rg usage:
+# --no-ignore: to find meta's below Library/PackageCache which is in the standard unity .gitignore
+# Pass directory . explicitly, because rg may heuristically decide to read stdin when this script is invoked in a shell loop
+set -- --no-ignore --files-with-matches "^guid: ${guid}" --glob='*.meta'
+if ! file="$(rg "$@" .)"
+then
+  EDITOR_VERSION="$(rg '^m_EditorVersion: (?<version>.*)$' --glob='**/ProjectSettings/ProjectVersion.txt' --replace='$version' --no-filename --no-line-number .)"
+  file="$(rg "$@" "${HALFYAK_UNITY_EDITOR_ROOT}/${EDITOR_VERSION}")"
+fi
+
+print -f '%s\n' "${file%.meta}"
