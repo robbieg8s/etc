@@ -1,0 +1,4 @@
+# Global rg ignore rules
+# This is mostly things that are "binary enough" you get spurious matches,
+# because they contain lots of base 64 for example.
+*.svg
