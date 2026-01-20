@@ -32,7 +32,7 @@ fi
 set -- --no-ignore --files-with-matches "^guid: ${guid}" --glob='*.meta'
 if ! file="$(rg "$@" .)"
 then
-  EDITOR_VERSION="$(rg '^m_EditorVersion: (?<version>.*)$' --glob='**/ProjectSettings/ProjectVersion.txt' --replace='$version' --no-filename --no-line-number .)"
+  EDITOR_VERSION="$(unity-version)"
   file="$(rg "$@" "${HALFYAK_UNITY_EDITOR_ROOT}/${EDITOR_VERSION}")"
 fi
 

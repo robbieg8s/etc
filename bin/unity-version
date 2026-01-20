@@ -1,0 +1,4 @@
+#!/bin/zsh -ef
+
+gitShowTopLevel="$(git rev-parse --show-toplevel)"
+rg '^m_EditorVersion: (?<version>.*)$' --glob='**/ProjectSettings/ProjectVersion.txt' --replace='$version' --no-filename --no-line-number "${gitShowTopLevel}"
