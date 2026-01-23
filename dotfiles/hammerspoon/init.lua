@@ -70,13 +70,19 @@ function audioBatcher:selectInput()
     end
 end
 function audioBatcher:selectOutput()
+  -- Rationale for order:
+  -- 1. Headphones should trump everything as easy access physical mute.
+  -- 2. You can switch Beats Flex off if you don't want them.
+  -- 3. Use Soundbar (home) if present
+  -- 4. Use monitor (home or work) - has headphones in jack at work
+  -- 5. Use laptop speakers
     local output = audioBatcher.findFirstAvailable(
         "Output",
         hs.audiodevice.allOutputDevices(),
         "External Headphones",
+        "Beats Flex",
         "Creative Stage Air V2",
         "DELL U2723QE",
-        "Beats Flex",
         "BuiltInSpeakerDevice")
     if (output ~= hs.audiodevice.defaultOutputDevice()) then
         self.selectedOutput = output
