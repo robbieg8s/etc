@@ -6,6 +6,12 @@
 
 # Configured as Profiles/Advanced/Semantic History -> Run command...,
 # $HOME/bin/Darwin/iterm-click \1
+# Note that "Always Run command..." passes a relative path (which makes sense because
+# really it's just a string), and also results in being called for "file like" things
+# such as URLs. You can get the pwd from iTerm with \5 or interpolation. However, this also
+# makes it active on lots of other things, which requires some thought. I don't understand
+# the priority here with respect to Smart Selection.
+
 file="${1:?}"
 line=${2+"$2"}
 
