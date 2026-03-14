@@ -11,9 +11,11 @@ error() {
 }
 
 usage() {
-  error "Usage: ${ZSH_ARGZERO} [ -u|--user USERNAME ] [ -c|--cwd ] [ -- [ docker-run-option ... ] ]" \
-    "  --user USERNAME: create and run as given USERNAME" \
-    "  --cwd: mount current working directory as /mnt/cwd" \
+  error "Usage: ${ZSH_ARGZERO} [ -c|--cwd ] [ -h|--help ] [ -k|--keep-going ] [ -u|--user USERNAME ] [ -- [ docker-run-option ... ] ]" \
+    "  -c | --cwd: mount current working directory as /mnt/cwd" \
+    "  -h | --help: show usage and exit" \
+    "  -k | --keep-going: stay in docker even if setup fails (to permit in situ debugging)" \
+    "  -u | --user USERNAME: create and run as given USERNAME" \
     "  docker-run-option: options passed through to docker run (before the image)"
 }
 
@@ -28,6 +30,11 @@ do
     -h|--help)
       usage
       exit 0
+      ;;
+    -k|--keep-going)
+      # Make this numeric - we might end up with levels of it ...
+      HALFYAK_KEEPGOING=1
+      shift
       ;;
     -u|--user)
       [ $# -ge 2 ] || error "Option $1 requires argument"
@@ -66,6 +73,7 @@ docker run --rm --interactive --tty \
   --entrypoint "${DOCKER_ENTRYPOINT}" \
   --env HALFYAK_ETC_GIT="${DOCKER_GIT_REPO}" \
   ${TERM_PROGRAM+--env} ${TERM_PROGRAM+"TERM_PROGRAM=${TERM_PROGRAM}"} \
+  ${HALFYAK_KEEPGOING+--env} ${HALFYAK_KEEPGOING+"HALFYAK_KEEPGOING=${HALFYAK_KEEPGOING}"} \
   ${HALFYAK_USERNAME+--env} ${HALFYAK_USERNAME+"HALFYAK_USERNAME=${HALFYAK_USERNAME}"} \
   --hostname "dockerized-etc" \
   --volume "${HOST_APK_CACHE}:${DOCKER_APK_CACHE}" \

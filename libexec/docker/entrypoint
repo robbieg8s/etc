@@ -37,10 +37,22 @@ fi
 # The safe.directory setting permits git to clone /mnt/etc.git despite the fact it is owned
 # by another user. This is required since the user inside docker uid will typically not
 # match the user on host uid.
-su "${HALFYAK_USERNAME:-root}"<<END_SETUP
+su "${HALFYAK_USERNAME:-root}"<<'END_SETUP'
 git config --global --add safe.directory /mnt/etc.git
 git clone "${HALFYAK_ETC_GIT}"
-~/etc/libexec/setup
+~/etc/libexec/setup || exitCode=$?
+# Respect keep-going flag - note we might broaden the scope of this in future, possibly with levels
+if [ -n "${exitCode-}" ]
+then
+  if [ -n "${HALFYAK_KEEPGOING-}" ]
+  then
+    printf 'setup failed (exit: %s) continuing anyway for investigation\n' "${exitCode}" 1>&2
+  else
+    # Propagate script error code
+    exit "${exitCode}"
+  fi
+# else fine - exit code was unset, setup succeeded
+fi
 END_SETUP
 
 # Start a configured shell as the user (default root)
