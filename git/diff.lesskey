@@ -1,0 +1,6 @@
+#command
+
+# Remap J/K to diff filewise motion. Note this relies on -A for good behaviour.
+# The .* at the end of the pattern extends the search highlight to EOL which looks nice
+J forw-search \^diff --git.*\n
+K back-search \^diff --git.*\n
