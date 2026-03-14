@@ -1,6 +1,5 @@
-# Treat some large textual files as binary to avoid crufting up diffs
-# Use git diff --text to get a diff when you need one
-# Unity meta files
-*.meta binary
+# Don't diff known large textual files to avoid crufting up diffs
+# Unity meta and prefab files
+*.meta -diff
 # Pnpm lock files
-pnpm-lock.yaml binary
+pnpm-lock.yaml -diff
