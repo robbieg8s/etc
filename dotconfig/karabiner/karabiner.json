@@ -234,6 +234,32 @@
                         ]
                     },
                     {
+                        "description": "Cmd + MouseButton4 to PageUp",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "modifiers": { "mandatory": ["left_command"] },
+                                    "pointing_button": "button4"
+                                },
+                                "to": [{ "key_code": "page_up" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Alt + MouseButton4 to Home",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "modifiers": { "mandatory": ["left_alt"] },
+                                    "pointing_button": "button4"
+                                },
+                                "to": [{ "key_code": "home" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
                         "description": "MouseButton5 to Command + ]",
                         "manipulators": [
                             {
@@ -262,6 +288,32 @@
                                         "modifiers": ["left_command", "left_shift"]
                                     }
                                 ],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Command + MouseButton5 to PageDown",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "modifiers": { "mandatory": ["left_command"] },
+                                    "pointing_button": "button5"
+                                },
+                                "to": [{ "key_code": "page_down" }],
+                                "type": "basic"
+                            }
+                        ]
+                    },
+                    {
+                        "description": "Alt + MouseButton5 to End",
+                        "manipulators": [
+                            {
+                                "from": {
+                                    "modifiers": { "mandatory": ["left_alt"] },
+                                    "pointing_button": "button5"
+                                },
+                                "to": [{ "key_code": "end" }],
                                 "type": "basic"
                             }
                         ]
