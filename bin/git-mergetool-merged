@@ -1,5 +1,10 @@
 #!/usr/bin/awk -f
 
+# Note: this is buggy if used to merge binary files ...
+# You can hack around this by invoking it as (zsh):
+# :; git mergetool --tool=merged -- ${(f)"$(git ls-modified)"}
+# It should be recast to use the numstat hack to sniff them
+
 # gitconfig to configure this:
 #
 # [mergetool "merged"]
