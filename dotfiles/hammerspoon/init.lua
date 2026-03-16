@@ -228,7 +228,7 @@ require("hs.ipc")
 
 --- Window management functions and hotkeys
 
-function normalizeWindow(screen, window)
+function normalizeWindow(screen, window, skipDefault)
   local frame = screen:frame()
   -- A few windows i like in particular positions
   local right1280 = function()
@@ -281,7 +281,9 @@ function normalizeWindow(screen, window)
   local handler = handlers[bundleId]
   if handler ~= nil then
     handler()
-  -- else for everything else, just maximize - leave frame unchanged
+  elseif skipDefault then
+    return
+  -- else permit default, leave frame unchanged which will maximize - leave frame unchanged
   end
   window:setFrame(frame)
 end
@@ -290,7 +292,7 @@ function normalizeCurrentWindow()
   -- main is screen with currently focused window
   local screen = hs.screen.mainScreen()
   local window = hs.window.frontmostWindow()
-  normalizeWindow(screen, window)
+  normalizeWindow(screen, window, false)
 end
 
 function switchCurrentWindowScreen()
@@ -299,11 +301,18 @@ function switchCurrentWindowScreen()
   -- No need to set duration, as the normalize makes everything happen fast anyway
   window:moveToScreen(screen:next())
   -- We need to pass values through, otherwise normalizeWindow sees stale values
-  normalizeWindow(screen:next(), window)
+  normalizeWindow(screen:next(), window, false)
 end
 
 hs.hotkey.bind({"ctrl"}, "pageup", "normalize window", normalizeCurrentWindow)
 hs.hotkey.bind({"ctrl"}, "pagedown", "switch screen", switchCurrentWindowScreen)
+
+hs.window.filter.new():subscribe(hs.window.filter.windowCreated, function(window, application, event)
+  -- This is a heuristic to skip splash screens / dialogs.
+  if (window.isMaximizable()) then
+    normalizeWindow(window:screen(), window, true)
+  end
+end)
 
 --- Notify that everything is loaded
 
