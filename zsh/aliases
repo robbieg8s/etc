@@ -50,6 +50,14 @@ gf() {
   git fetch "$@"
 }
 compdef _git gf=git-fetch
+# Note: not really git, but git adjacent, and I will look for it here ...
+gh() {
+  op plugin run -- gh "$@"
+}
+# I don't know why the existing autoload doesn't work here, but kagi thinks
+# it's load order issues, but the other compdefs work fine.
+source <(command gh completion --shell zsh)
+compdef _gh gh
 gl() {
   git log "$@"
 }
