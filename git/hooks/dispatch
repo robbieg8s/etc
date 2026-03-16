@@ -21,9 +21,7 @@ HOOK_DIR="$0.d"
 () {
   local stdinData="${1:?}"
   shift
-  # Capture stdin data so we can repeat it per hook
-  cat > "${stdinData}"
-  for hook in "${HOOK_DIR}"/*
+  for hook in "${HOOK_DIR}"/*(N)
   do
     # Invoke each hook forwarding arguments and stdin data
     local start="${EPOCHREALTIME}"
@@ -31,4 +29,5 @@ HOOK_DIR="$0.d"
     local elapsed="$((EPOCHREALTIME - start))"
     print -u2 -f 'Hook %s took %.2f s\n' "${hook}" "${elapsed}"
   done
-} =(true) "$@"
+  # =(cat) to Capture stdin data so we can repeat it per hook
+} =(cat) "$@"

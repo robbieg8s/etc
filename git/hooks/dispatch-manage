@@ -1,0 +1,92 @@
+#!/bin/zsh -ef
+
+# This isn't all of them, but it's what we need to support now
+HOOK_NAMES=(post-checkout post-commit post-merge pre-push)
+HOOKS_DIR="$(git rev-parse --git-path hooks)"
+
+# Infer dispatch script location from our location
+DISPATCH="${0%-manage:A}"
+
+[[ -d "${HOOKS_DIR}" ]] || {
+  print -u2 -f 'Cannot find hook directory %s\n' "${HOOKS_DIR}"
+  exit 1
+}
+
+dispatch_manage_process_hook() {
+  local hook_name="${1:?}"
+  local hook_script="${HOOKS_DIR}/${hook_name}"
+  if [[ ${HOOK_NAMES[(i)${hook_name}]} -gt ${#HOOK_NAMES} ]]
+  then
+    print -P "%F{red}Unknown hook ${hook_name}%f"
+    return 2
+  elif [[ ! -e "${hook_script}" ]]
+  then
+    return 0
+  elif [[ ! "${hook_script}" -ef "${DISPATCH}" ]]
+  then
+    print -P "%F{red}Hook ${hook_name} exists and is %Bnot%b dispatch%f"
+    local quoted_script="${(q-)hook_script}"
+    printf ':; mv -i %s %s.bak\n' "${quoted_script}" "${quoted_script}"
+    printf ':; rm %s\n' "${quoted_script}"
+    return 2
+  else
+    return 1
+  fi
+}
+
+dispatch_manage_verb_list() {
+  local exit_status=0
+  local hook_name
+  for hook_name in "${(@)HOOK_NAMES}"
+  do
+    local hook_status=0
+    dispatch_manage_process_hook "${hook_name}" || { hook_status="$?" ; }
+    case ${hook_status} in
+      0) print -P "%F{yellow}Hook ${hook_name} is not installed%f" ;;
+      1)
+        local hook_script="${HOOKS_DIR}/${hook_name}"
+        local hook_script_dir="${hook_script}.d"
+        print -P "%F{green}Hook ${hook_name} is installed%f"
+        print "  Place scripts or links in ${(q-)hook_script_dir}"
+        ;;
+      *) exit_status=1 ;;
+    esac
+  done
+  exit ${exit_status}
+}
+
+dispatch_manage_verb_install() {
+  [[ $# -eq 0 ]] && set -- "${(@)HOOK_NAMES}"
+  local exit_status=0
+  local hook_name
+  for hook_name in "$@"
+  do
+    local hook_status=0
+    dispatch_manage_process_hook "${hook_name}" || { hook_status="$?" ; }
+    local hook_script="${HOOKS_DIR}/${hook_name}"
+    local hook_script_dir="${hook_script}.d"
+    case ${hook_status} in
+      0|1)
+        # recreate if necessary convenience, also flags errors
+        mkdir -p "${hook_script_dir}"
+        # be idempotent so we can have the same handling for 0|1)
+        [[ -L "${hook_script}" ]] || ln -s "${DISPATCH}" "${hook_script}"
+        print -P "%F{green}Hook ${hook_name} installed%f"
+        print "  Place scripts or links in ${(q-)hook_script_dir}"
+        ;;
+      *) exit_status=1 ;;
+    esac
+  done
+  exit ${exit_status}
+}
+
+if [[ $# -ne 0 ]]
+then
+  verb="${1:?}"
+  shift
+  dispatch_manage_verb_"${verb}" "$@"
+else
+  print 'Usage:'
+  print "$0 list - show current hooks status for known hooks"
+  print "$0 install [hooks ...] - install given hooks, or all if no argument given"
+fi
