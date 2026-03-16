@@ -309,7 +309,7 @@ hs.hotkey.bind({"ctrl"}, "pagedown", "switch screen", switchCurrentWindowScreen)
 
 hs.window.filter.new():subscribe(hs.window.filter.windowCreated, function(window, application, event)
   -- This is a heuristic to skip splash screens / dialogs.
-  if (window.isMaximizable()) then
+  if (window:isMaximizable()) then
     normalizeWindow(window:screen(), window, true)
   end
 end)
