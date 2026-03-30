@@ -249,7 +249,7 @@ function normalizeWindow(screen, window, skipDefault)
     ["com.googlecode.iterm2"] = function()
       -- iTerm
       -- This is 132 columns of Menlo 15, my current terminal font, plus the iTerm2 padding
-      -- In priciple i can query the font geometry using osascript:
+      -- In principle i can query the font geometry using osascript:
       --   ObjC.import('AppKit');
       --   $.NSFont.fontWithNameSize('Menlo',15.0). maximumAdvancement.width;
       -- but i'd still have to know the padding. Probably i should just use the iTerm API directly,
@@ -277,7 +277,8 @@ function normalizeWindow(screen, window, skipDefault)
   local bundleId = window:application():bundleID()
   -- Make it easy to get the data you need to extend the handler map
   -- If this is useful outside this context, you could put extra info here also ...
-  hs.pasteboard.setContents(bundleId)
+  -- Disabled for now - normalize on create makes this fire too often
+  -- hs.pasteboard.setContents(bundleId)
   local handler = handlers[bundleId]
   if handler ~= nil then
     handler()
@@ -309,6 +310,9 @@ hs.hotkey.bind({"ctrl"}, "pagedown", "switch screen", switchCurrentWindowScreen)
 
 hs.window.filter.new():subscribe(hs.window.filter.windowCreated, function(window, application, event)
   -- This is a heuristic to skip splash screens / dialogs.
+  -- Things we get wrong currently
+  -- - iTerm clipboard edit hotkey (uses iTerm setting when it shouldn't)
+  -- - Unity Editor window (is default but i want normalize on create for it)
   if (window:isMaximizable()) then
     normalizeWindow(window:screen(), window, true)
   end
