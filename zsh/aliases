@@ -95,6 +95,12 @@ gv() {
   git show "$@"
 }
 compdef _git gv=git-show
+# Note: insert options before branch (unclear usage but adding after branch seems unlikely)
+gvom() {
+  git show "$@" origin/main
+}
+# Complete as if origin/main wasn't there, since options are inserted ahead of it
+compdef _git gvom=git-show
 gvno() {
   git show --name-only "$@"
 }
