@@ -7,5 +7,6 @@ HALFYAK_ETC_LIBEXEC="${$(print -P '%x'):A:h}"
 printf '%s: Running daily tasks\n' "$(date)"
 
 "${HALFYAK_ETC_LIBEXEC}"/daily-backup
+"${HALFYAK_ETC_LIBEXEC}"/daily-snapshot
 
 printf '%s: Completed daily tasks\n' "$(date)"
