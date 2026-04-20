@@ -245,16 +245,25 @@ function normalizeWindow(screen, window, skipDefault)
     frame.w = width
     frame.h = height
   end
+  local default = function()
+    -- As is - which is currently maximized. This is a convenient hack for windows that just
+    -- want to not get sipped by the invocation from the creation filter.
+  end
   local handlers = {
     ["com.googlecode.iterm2"] = function()
       -- iTerm
-      -- This is 132 columns of Menlo 15, my current terminal font, plus the iTerm2 padding
-      -- In principle i can query the font geometry using osascript:
-      --   ObjC.import('AppKit');
-      --   $.NSFont.fontWithNameSize('Menlo',15.0). maximumAdvancement.width;
-      -- but i'd still have to know the padding. Probably i should just use the iTerm API directly,
-      -- but i've not yet invested in understanding that, and this is convenient.
-      frame.w = 1213
+      if (window.title ~= "Default") then
+        -- Don't touch non default iTerm windows - they are configured in iTerm
+        frame = nil
+      else
+        -- This is 132 columns of Menlo 15, my current terminal font, plus the iTerm2 padding
+        -- In principle i can query the font geometry using osascript:
+        --   ObjC.import('AppKit');
+        --   $.NSFont.fontWithNameSize('Menlo',15.0). maximumAdvancement.width;
+        -- but i'd still have to know the padding. Probably i should just use the iTerm API directly,
+        -- but i've not yet invested in understanding that, and this is convenient.
+        frame.w = 1213
+      end
     end,
     ["com.1password.1password"] = smallerUpperRight,
     ["com.apple.MobileSMS"] = right1280,
@@ -271,6 +280,7 @@ function normalizeWindow(screen, window, skipDefault)
     ["com.apple.reminders"] = smallerUpperRight,
     ["com.kapeli.dashdoc"] = right1280,
     ["com.tinyspeck.slackmacgap"] = right1280,
+    ["com.unity3d.UnityEditor5.x"] = default,
     ["com.unity3d.unityhub"] = smallerUpperRight,
     ["org.whispersystems.signal-desktop"] = smallerUpperRight
   }
@@ -286,7 +296,10 @@ function normalizeWindow(screen, window, skipDefault)
     return
   -- else permit default, leave frame unchanged which will maximize - leave frame unchanged
   end
-  window:setFrame(frame)
+  if frame ~= nil then
+    window:setFrame(frame)
+  -- else handler has said to leave window alone
+  end
 end
 
 function normalizeCurrentWindow()
@@ -310,9 +323,6 @@ hs.hotkey.bind({"ctrl"}, "pagedown", "switch screen", switchCurrentWindowScreen)
 
 hs.window.filter.new():subscribe(hs.window.filter.windowCreated, function(window, application, event)
   -- This is a heuristic to skip splash screens / dialogs.
-  -- Things we get wrong currently
-  -- - iTerm clipboard edit hotkey (uses iTerm setting when it shouldn't)
-  -- - Unity Editor window (is default but i want normalize on create for it)
   if (window:isMaximizable()) then
     normalizeWindow(window:screen(), window, true)
   end
