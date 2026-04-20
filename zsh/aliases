@@ -58,6 +58,23 @@ gh() {
 # it's load order issues, but the other compdefs work fine.
 source <(command gh completion --shell zsh)
 compdef _gh gh
+# gk = git stash (think: keep)
+gk() {
+  git stash "$@"
+}
+compdef _git gk=git-stash
+gkl() {
+  git stash "$@" list
+}
+# Not sure what completion i want here yet
+gkp() {
+  git stash "$@" pop
+}
+# Not sure what completion i want here yet
+gkq() {
+  git stash "$@" push
+}
+# Not sure what completion i want here yet
 gl() {
   git log "$@"
 }
