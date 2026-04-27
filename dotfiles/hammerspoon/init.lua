@@ -228,7 +228,7 @@ require("hs.ipc")
 
 --- Window management functions and hotkeys
 
-function normalizeWindow(screen, window, skipDefault)
+function normalizeWindow(screen, window, creation)
   local frame = screen:frame()
   -- A few windows i like in particular positions
   local right1280 = function()
@@ -247,12 +247,12 @@ function normalizeWindow(screen, window, skipDefault)
   end
   local default = function()
     -- As is - which is currently maximized. This is a convenient hack for windows that just
-    -- want to not get sipped by the invocation from the creation filter.
+    -- want to not get skipped by the invocation from the creation filter.
   end
   local handlers = {
     ["com.googlecode.iterm2"] = function()
       -- iTerm
-      if (window.title ~= "Default") then
+      if (window:title() ~= "Default") then
         -- Don't touch non default iTerm windows - they are configured in iTerm
         frame = nil
       else
@@ -280,7 +280,16 @@ function normalizeWindow(screen, window, skipDefault)
     ["com.apple.reminders"] = smallerUpperRight,
     ["com.kapeli.dashdoc"] = right1280,
     ["com.tinyspeck.slackmacgap"] = right1280,
-    ["com.unity3d.UnityEditor5.x"] = default,
+    ["com.torusknot.SourceTreeNotMAS"] = smallerUpperRight,
+    ["com.unity3d.UnityEditor5.x"] = function()
+      -- Only the main unity project window has a document in accessibility
+      local axElement = hs.axuielement.windowElement(window)
+      if (axElement.AXDocument == nil) then
+        -- Let unity place windows other than the main document window
+        frame = nil
+      -- else main unity window, accept default frame
+      end
+    end,
     ["com.unity3d.unityhub"] = smallerUpperRight,
     ["org.whispersystems.signal-desktop"] = smallerUpperRight
   }
@@ -292,9 +301,9 @@ function normalizeWindow(screen, window, skipDefault)
   local handler = handlers[bundleId]
   if handler ~= nil then
     handler()
-  elseif skipDefault then
+  elseif creation then
     return
-  -- else permit default, leave frame unchanged which will maximize - leave frame unchanged
+  -- else permit default, leave frame unchanged which will maximize
   end
   if frame ~= nil then
     window:setFrame(frame)
