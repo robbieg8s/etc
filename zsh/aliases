@@ -75,6 +75,14 @@ gkq() {
   git stash "$@" push
 }
 # Not sure what completion i want here yet
+gkv() {
+  git stash "$@" show
+}
+# Not sure what completion i want here yet
+gkvp() {
+  git stash "$@" show --patch
+}
+# Not sure what completion i want here yet
 gl() {
   git log "$@"
 }
@@ -133,6 +141,9 @@ gx() {
   git commit "$@"
 }
 compdef _git gx=git-commit
+gy() {
+  git yolo
+}
 
 # Shell history in sqlite
 # These are for interactive use, and so fail if teh relevant variables aren't set
