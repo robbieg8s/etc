@@ -1,12 +1,12 @@
-#!/bin/zsh
-
-set -e
+#!/bin/zsh -e
 
 log() {
-  printf '%s: %s\n' "$(date)" "$*"
+  local fmt="${1:?}"
+  shift
+  print -f "%s: ${fmt}\n" -- "$(date)" "$@"
 }
 
-error() {
+fail() {
   log "$@"
   exit 1
 }
@@ -14,11 +14,12 @@ error() {
 BACKUP_ROOT=~/cloud/backup
 if [[ ! -d "${BACKUP_ROOT}" ]]
 then
-  error "No backup root at '${BACKUP_ROOT}', cannot backup"
+  fail 'No backup root at %s, cannot backup' "${(q+)BACKUP_ROOT}"
 else
   BACKUP_DIR="${BACKUP_ROOT}/$(date +'%Y-%m-%d')"
-  log "Backing up to '${BACKUP_DIR}'"
-  mkdir "${BACKUP_DIR}" || error "Partial backup at '${BACKUP_DIR}', giving up"
+  log 'Backing up to %s' "${(q+)BACKUP_DIR}"
+
+  mkdir "${BACKUP_DIR}" || fail 'Partial backup at %s, giving up' "${(q+)BACKUP_DIR}"
 
   sqlite3 "${HALFYAK_ETC_SQLITE_HISTORY_DB}" '.dump' \
     | bzip2 --stdout \
@@ -27,5 +28,7 @@ else
 
   cp "${HOME}/.docker/config.json" "${BACKUP_DIR}/docker-config.json"
 
-  log "$(du -sh "${BACKUP_DIR}")"
+  local size
+  size="$(du -sh "${BACKUP_DIR}")"
+  log 'Backup Size: %s' "${size}"
 fi

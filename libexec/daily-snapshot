@@ -1,9 +1,9 @@
-#!/bin/zsh -ef
+#!/bin/zsh -e
 
 log() {
   local fmt="${1:?}"
   shift
-  print -f "$fmt\n" -- "$@"
+  print -f "%s: ${fmt}\n" -- "$(date)" "$@"
 }
 
 fail() {
@@ -11,30 +11,38 @@ fail() {
   exit 1
 }
 
-SERIAL="$(system_profiler -json SPHardwareDataType | jq --raw-output '.SPHardwareDataType[0].serial_number')"
-SNAPSHOT_ROOT="${HOME}/Documents/etc/local/${SERIAL}"
-
-if [[ ! -d "${SNAPSHOT_ROOT}" ]]
+BACKUP_ROOT=~/cloud/backup
+if [[ ! -d "${BACKUP_ROOT}" ]]
 then
-  fail 'No snapshot root at %s, cannot snapshot' "${(q+)SNAPSHOT_ROOT}"
+  fail 'No backup root at %s, cannot snapshot' "${(q+)BACKUP_ROOT}"
 else
+  SNAPSHOT_DIR="${BACKUP_ROOT}/snapshot"
+  log 'Snapshotting to %s' "${(q+)SNAPSHOT_DIR}"
+
+  mkdir -p "${SNAPSHOT_DIR}" || fail 'Cannot create %s, giving up' "${(q+)SNAPSHOT_DIR}"
+
   for dir in ~/src/*(/)
   do
     local name="${dir##*/}"
-    local snapshot="${SNAPSHOT_ROOT}/src/${name}"
+    local snapshot="${SNAPSHOT_DIR}/src/${name}"
     mkdir -p "${snapshot}"
     git -C "${dir}" config get remote.origin.url > "${snapshot}/remote.origin.url"
   done
 
-  asdf list > "${SNAPSHOT_ROOT}/asdf"
+  asdf list > "${SNAPSHOT_DIR}/asdf"
 
-  mkdir -p "${SNAPSHOT_ROOT}/alfredapp"
+  mkdir -p "${SNAPSHOT_DIR}/alfredapp"
   rsync --checksum --delete --links --recursive \
     ~/"Library/Application Support/Alfred/Alfred.alfredpreferences"/ \
-    "${SNAPSHOT_ROOT}/alfredapp/Alfred.alfredpreferences"/
+    "${SNAPSHOT_DIR}/alfredapp/Alfred.alfredpreferences"/
 
-  mkdir -p "${SNAPSHOT_ROOT}/iterm"
+  mkdir -p "${SNAPSHOT_DIR}/iterm"
   rsync --checksum --delete --links --recursive \
     ~/"Library/Preferences/com.googlecode.iterm2.plist" \
-    "${SNAPSHOT_ROOT}/iterm/com.googlecode.iterm2.plist"
+    "${SNAPSHOT_DIR}/iterm/com.googlecode.iterm2.plist"
+
+
+  local size
+  size="$(du -sh "${SNAPSHOT_DIR}")"
+  log 'Snapshot Size: %s' "${size}"
 fi

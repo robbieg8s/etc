@@ -1,6 +1,4 @@
-#!/bin/zsh
-
-set -ex
+#!/bin/zsh -efx
 
 HALFYAK_ETC_LIBEXEC="${$(print -P '%x'):A:h}"
 
