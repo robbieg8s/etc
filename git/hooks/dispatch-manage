@@ -5,7 +5,7 @@ HOOK_NAMES=(post-checkout post-commit post-merge pre-push)
 HOOKS_DIR="$(git rev-parse --git-path hooks)"
 
 # Infer dispatch script location from our location
-DISPATCH="${0%-manage:A}"
+DISPATCH="${${0%-manage}:A}"
 
 [[ -d "${HOOKS_DIR}" ]] || {
   print -u2 -f 'Cannot find hook directory %s\n' "${HOOKS_DIR}"
