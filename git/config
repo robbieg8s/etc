@@ -13,6 +13,8 @@
   cmd = git mergetool-merged \"${MERGED}\"
   keepBackup = false
   trustExitCode = true
+[alias]
+  lesskey-pager = !less -A --lesskey-src ~/etc/git/diff.lesskey
 [pager]
   # Note this requires a less with lesskey support compiled in.
   # This may be macOS version dependent, as of 26.3.1 (25D2128) it appears to work,
@@ -20,7 +22,8 @@
   # Homebrew may have a more recent less if this breaks or proves flaky.
   # Pass -A directly since using #env LESS in the lesskey file doesn't
   # work because git set LESS also (to pass FRX)
-  diff = less -A --lesskey-src ~/etc/git/diff.lesskey
+  diff = git lesskey-pager
+  show = git lesskey-pager
 
 [pull]
   ff = only

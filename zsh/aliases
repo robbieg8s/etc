@@ -64,25 +64,25 @@ gk() {
 }
 compdef _git gk=git-stash
 gkl() {
-  git stash "$@" list
+  git stash list "$@"
 }
-# Not sure what completion i want here yet
+# Not sure how to wire through to subcommand completion here yet
 gkp() {
-  git stash "$@" pop
+  git stash pop "$@"
 }
-# Not sure what completion i want here yet
+# Not sure how to wire through to subcommand completion here yet
 gkq() {
-  git stash "$@" push
+  git stash push "$@"
 }
-# Not sure what completion i want here yet
+# Not sure how to wire through to subcommand completion here yet
 gkv() {
-  git stash "$@" show
+  git stash show "$@"
 }
-# Not sure what completion i want here yet
+# Not sure how to wire through to subcommand completion here yet
 gkvp() {
-  git stash "$@" show --patch
+  git stash show --patch "$@"
 }
-# Not sure what completion i want here yet
+# Not sure how to wire through to subcommand completion here yet
 gl() {
   git log "$@"
 }
