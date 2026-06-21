@@ -35,7 +35,10 @@
 
 [alias]
   commit-update = commit --amend --reset-author
+  # Allow single non-space chars to be words (as advised by man page) because
+  # non-word content is ignored(!) by word-diff-regex.
   diff-words = diff --word-diff-regex='[a-zA-Z]+|[^[:space:]]'
+  diff-camel = diff --word-diff-regex='[a-zA-Z][a-z]+|[^[:space:]]'
   initial-commit = commit --allow-empty --message='Initial commit'
   ls-added = diff --name-only --relative --diff-filter=A
   ls-deleted = diff --name-only --relative --diff-filter=D
