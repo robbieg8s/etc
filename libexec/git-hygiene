@@ -1,6 +1,4 @@
-#!/bin/zsh -f
-
-set -e
+#!/bin/zsh -ef
 
 notify() {
   local repo="${1:?}"
@@ -44,7 +42,8 @@ examine() {
           fi
         fi
       done
-      if ! git -C "${repo}" pristine >> "${out}"
+      # The -c here allows this script to keep -f
+      if ! git -c alias.pristine="!$HOME/bin/git-pristine" -C "${repo}" pristine >> "${out}"
       then
         : $((++warn))
       fi

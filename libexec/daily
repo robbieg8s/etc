@@ -1,5 +1,7 @@
 #!/bin/zsh -efx
 
+exec 1>> "${HOME}/var/log/${ZSH_ARGZERO:t}.out" 2>> "${HOME}/var/log/${ZSH_ARGZERO:t}.err"
+
 HALFYAK_ETC_LIBEXEC="${$(print -P '%x'):A:h}"
 
 printf '%s: Running daily tasks\n' "$(date)"

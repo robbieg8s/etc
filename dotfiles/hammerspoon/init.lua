@@ -226,6 +226,41 @@ hs.urlevent.mailtoCallback = handleMailto
 
 require("hs.ipc")
 
+--- Bindings for hammerspoon:// urls
+-- This provides an async notification for hammerspoon to do work.
+-- My primary goal is to use this to elevate specific maintenance scripts past the
+-- TCC barrier for Full Disk Access.
+-- It should also be used to replace hs.ipc for bin/hammerspoon-alert, since hs.ipc
+-- is a confused deputy waiting to happen.
+-- Props to Gemini for pointing out this neat trick for TCC elevation.
+
+function runLibexecTask(name)
+  local libexec = os.getenv("HOME") .. "/etc/libexec/"
+  local mailOnFail = libexec .. "mail-on-fail"
+  local taskExe = libexec .. name
+  local task = hs.task.new(mailOnFail, function(exitCode, stdOut,stdErr)
+    print(name .. ": " .. exitCode)
+    if (0 ~= #stdOut) then
+      print(name .. " stdout: " .. stdOut)
+    end
+    if (0 ~= #stdErr) then
+      print(name .. " stderr: " .. stdErr)
+    end
+  end, { taskExe }):start()
+  -- I'm not sure how to fault inject this properly, mangling the exe path exits early
+  if (task == nil) then
+      print("runLibexecTaskl failed to run '" .. mailOnFail .. "' '" .. taskExe .. "'")
+  -- else fine, task can report errors if it started
+  end
+end
+
+-- Enumerate entry points hard as a slight barrier to abuse
+-- We could add token check to the query string via a local file since we have
+-- LaunchAgent rewriting to inject $HOME.
+
+hs.urlevent.bind("maintenance-daily", function() runLibexecTask("daily") end)
+hs.urlevent.bind("maintenance-weekly", function() runLibexecTask("weekly") end)
+
 --- Window management functions and hotkeys
 
 function normalizeWindow(screen, window, creation)

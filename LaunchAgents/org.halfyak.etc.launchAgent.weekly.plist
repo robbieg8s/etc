@@ -6,8 +6,9 @@
     <string>org.halfyak.etc.launchAgent.weekly</string>
     <key>ProgramArguments</key>
     <array>
-      <string>${HALFYAK_ETC}/libexec/mail-on-fail</string>
-      <string>${HALFYAK_ETC}/libexec/weekly</string>
+      <string>/usr/bin/open</string>
+      <string>-g</string>
+      <string>hammerspoon://maintenance-weekly</string>
     </array>
     <key>StartCalendarInterval</key>
     <dict>

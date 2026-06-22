@@ -6,8 +6,9 @@
     <string>org.halfyak.etc.launchAgent.daily</string>
     <key>ProgramArguments</key>
     <array>
-      <string>${HALFYAK_ETC}/libexec/mail-on-fail</string>
-      <string>${HALFYAK_ETC}/libexec/daily</string>
+      <string>/usr/bin/open</string>
+      <string>-g</string>
+      <string>hammerspoon://maintenance-daily</string>
     </array>
     <key>StartCalendarInterval</key>
     <dict>
