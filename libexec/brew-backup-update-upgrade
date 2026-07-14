@@ -33,6 +33,7 @@ UNLINKED="${HOME}/cloud/etc/homebrew/unlinked.txt"
 join -v1 =(ls /opt/homebrew/Cellar) =(ls /opt/homebrew/var/homebrew/linked) > "${UNLINKED}"
 
 # Update and Upgrade Brew
+export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
 brew update
 # Don't auto upgrade casks
 # - openjdk8, needed by plantuml, is interactive
