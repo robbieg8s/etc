@@ -14,7 +14,10 @@ bind generic <Down> none
 # Don't us n for this, in tig it works after / like it does in vi
 bind generic N !>vim -c '$' COMMIT_EDITMSG
 # A very poor (y)ank, but good enough to pull text from tig into vi
-bind generic y @sh -c "printf '%s' '%(text)' | pbcopy"
+# Note that tig treats "" internally to split the following command,
+# which arranges to pass the yanked text as a single argument even
+# if it contains quotes, double quotes, etc
+bind generic y @zsh -c 'pbcopy <<<"$1"' -- "%(text)"
 
 # I set *.meta to binary to reduce cruft in unity diffs, this
 # allows me to restore it easily when needed for reviewing
