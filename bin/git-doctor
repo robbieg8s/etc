@@ -87,5 +87,8 @@ done
 echo
 echo "Garbage collecting"
 git gc
+echo "Pruning LFS"
+# This is a safe no-op for non-LFS repos
+git lfs prune
 echo
 echo "Done"
