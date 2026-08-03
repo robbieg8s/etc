@@ -13,7 +13,8 @@
 # the priority here with respect to Smart Selection.
 
 file="${1:?}"
-line=${2+"$2"}
+# This is optional, we suppress empty below. I should find a cleaner fix for this.
+line="$2"
 
 # Tig (at least) passes the "a/" prefix in a diff view through, so remove these heuristically
 # Possibly this should also use :A:h ...
@@ -32,15 +33,15 @@ then
       [[ -e "${dir}/package.json" ]] && { packageJsonDir="${dir}" ; }
       [[ -e "${dir}/${dir:t}.sln" ]] && {
           # Looks like a rider project
-          exec open -nb com.jetbrains.rider --args "${file}" ${line+--line} ${line+"${line}"}
+          exec open -nb com.jetbrains.rider --args "${file}" ${line:+--line} ${line:+"${line}"}
       }
       [[ -e "${dir}/.idea" && -n "${packageJsonDir}" ]] && {
           # Looks like a webstorm project
-          exec open -nb com.jetbrains.webstorm --args "${file}" ${line+--line} ${line+"${line}"}
+          exec open -nb com.jetbrains.webstorm --args "${file}" ${line:+--line} ${line:+"${line}"}
       }
       [[ -e "${dir}/.idea" && -d "${dir}/hugo" ]] && {
           # Hugo website, use webstorm
-          exec open -nb com.jetbrains.webstorm --args "${file}" ${line+--line} ${line+"${line}"}
+          exec open -nb com.jetbrains.webstorm --args "${file}" ${line:+--line} ${line:+"${line}"}
       }
       dir="${dir:h}"
   done
