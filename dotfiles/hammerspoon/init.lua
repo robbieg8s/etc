@@ -81,6 +81,7 @@ function audioBatcher:selectOutput()
         hs.audiodevice.allOutputDevices(),
         "External Headphones",
         "Beats Flex",
+        "Work Headset",
         "Creative Stage Air V2",
         "DELL U2723QE",
         "BuiltInSpeakerDevice")
