@@ -27,6 +27,8 @@ then
   # - for iterm click, \1 arrives as an absolute path and script runs in /
   # - for tig, \1 arrives as an offset and script runs in cwd
   # but we assume only that it is correct relative to our directory
+  # Warning: Recent JetBrains updates have broken this, and i've not got a reliable workaround
+  # yet. See https://youtrack.jetbrains.com/issue/IJPL-249895
   dir="${file:A:h}"
   until [[ "${dir}" -ef / ]]
   do
