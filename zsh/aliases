@@ -56,8 +56,8 @@ gh() {
 }
 # I don't know why the existing autoload doesn't work here, but kagi thinks
 # it's load order issues, but the other compdefs work fine.
-source <(command gh completion --shell zsh)
-compdef _gh gh
+# Only try to setup gh completeion forwarding if we have gh installed
+(( $+commands[gh] )) && source <(command gh completion --shell zsh) && compdef _gh gh
 # gk = git stash (think: keep)
 gk() {
   git stash "$@"
