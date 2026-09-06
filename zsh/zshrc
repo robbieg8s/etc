@@ -104,3 +104,6 @@ unalias -a
 source "${ETC_ZSH_DIR}"/aliases
 # Also include some additional completions
 source "${ETC_ZSH_DIR}"/completions
+
+# Discourage Unity Hub from editing my zshrc (Experimental)
+# Unity CLI
