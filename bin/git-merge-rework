@@ -1,10 +1,22 @@
-#!/bin/sh -e
+#!/bin/zsh -ef
 # Merge a branch back untracked so it can be reworked
 
 # This is designed for a workflow where "mostly final"
 # changes are prepared on a branch, and it is then reworked
 # and segmented on a target branch for publication.
 
-# It's ok if the merge fails, don't abort
-git merge --no-commit --no-ff "$@" || true
-git reset --mixed -N HEAD
+# HT Gemini for helping refine this workflow
+
+# Bring in changes without creating a merge commit, don't fail if there are conflicts
+git merge --squash "$@" || true
+
+# Discard generated commit messages which I never want for rework
+rm -f ${(f)"$(git rev-parse --git-path SQUASH_MSG --git-path MERGE_MSG)"}
+
+# Unstage unconflicted files, which will also untrack completely new files.
+git diff --staged -z --name-only --diff-filter=u | git restore --staged --pathspec-file-nul --pathspec-from-file=-
+[[ 0 -eq "${#pipestatus:#0}" ]]
+
+# Track new files, but don't stage their content
+git ls-files -z --others --exclude-standard | git -c advice.addEmptyPathspec=false add --intent-to-add --pathspec-file-nul --pathspec-from-file=-
+[[ 0 -eq "${#pipestatus:#0}" ]]
