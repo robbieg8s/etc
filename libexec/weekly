@@ -15,6 +15,9 @@ printf '%s: Running weekly tasks\n' "$(date)"
 # Notify if we have disk images attached
 "${HALFYAK_ETC_LIBEXEC}/attached-disk-image-notify"
 
+# Tasks after this point may require network access
+~/bin/wait-for-network
+
 # Brew maintenance
 "${HALFYAK_ETC_LIBEXEC}/brew-backup-update-upgrade"
 

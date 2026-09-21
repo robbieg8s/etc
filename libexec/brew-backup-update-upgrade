@@ -1,6 +1,4 @@
-#!/bin/zsh
-
-set -ex
+#!/bin/zsh -ex
 
 retry() {
   local limit="${1:?}"
@@ -16,6 +14,11 @@ retry() {
     fi
   done
 }
+
+# Stop homebrew deciding it wants to run updates on its own schedule
+export HOMEBREW_NO_AUTO_UPDATE
+# Stop homebrew upgrading casks which upgrade themselves
+export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
 
 # Save Brew config
 BREWFILE="${HOME}/cloud/etc/homebrew/Brewfile"
@@ -33,7 +36,6 @@ UNLINKED="${HOME}/cloud/etc/homebrew/unlinked.txt"
 join -v1 =(ls /opt/homebrew/Cellar) =(ls /opt/homebrew/var/homebrew/linked) > "${UNLINKED}"
 
 # Update and Upgrade Brew
-export HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1
 brew update
 # Don't auto upgrade casks
 # - openjdk8, needed by plantuml, is interactive
@@ -53,7 +55,7 @@ Subject: Brew cask: ${upgrades:-output parser broken}
 
 $(cat ${output})
 
-:; brew upgrade --cask
+:; HOMEBREW_NO_UPGRADE_AUTO_UPDATES_CASKS=1 brew upgrade --cask
 END_MAIL
   fi
 } =(true)

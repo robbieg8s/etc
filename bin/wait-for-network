@@ -1,0 +1,38 @@
+#!/bin/zsh -ef
+
+# Gemini did the background research for this, including EPOCHSECONDS and nc command line
+
+zmodload -F zsh/datetime +p:EPOCHSECONDS
+zmodload -F zsh/zselect +b:zselect
+
+POLL_INTERVAL_SECONDS=2
+POLL_TIMEOUT_SECONDS=30
+
+pollTimeout() {
+  local startTime="${1:?}"
+  shift
+
+  (( (EPOCHSECONDS - startTime) < POLL_TIMEOUT_SECONDS )) || { print -u2 -f "$@" ; exit 1 }
+  # zselect -t timeout is in hundredths, and don't exit when we timeout
+  zselect -t $(( POLL_INTERVAL_SECONDS * 100 )) || true
+}
+
+local startTime=$EPOCHSECONDS
+
+# See if we can see cloudflare dns, reuse POLL_INTERVAL_SECONDS for nc timeout
+local ncCalls=1
+until nc -z -w "${POLL_INTERVAL_SECONDS}" 1.1.1.1 53 >/dev/null 2>&1
+do
+  pollTimeout "${startTime}" "Cannot reach 1.1.1.1 53 after %s probes\n" "${ncCalls}"
+  let ++ncCalls
+done
+
+# Next try to resolve cloudflare dns
+local hostCalls=1
+until host one.one.one.one >/dev/null 2>&1
+do
+  pollTimeout "${startTime}" "Cannot resolve one.one.one.one after %s probes" "${hostCalls}"
+  let ++hostCalls
+done
+
+print -u2 -f "Network up, probes %s/%s\n" "${ncCalls}" "${hostCalls}"
