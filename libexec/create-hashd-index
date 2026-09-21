@@ -27,7 +27,7 @@ if [[ "${index_file}" -nt "${directory}" ]]
 then
   printf '%s: Already up to date, index %s for %s\n' "$(date)" "${index_file}" "${directory}"
 else
-  # If this looks barquote, it's because touch is a bit nontrivial, and i want atomic updates
+  # If this looks baroque, it's because touch is a bit nontrivial, and i want atomic updates
   # of the file to facilitate sourcing it concurrently. Back when i wrote this, touch -r used stat,
   # which uses a timespec, with its nanosecond precision, to read the timestamp of the reference file,
   # but utimes, which uses a timeval, with its microsecond precision, to write the timestamp to the new file,
