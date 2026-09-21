@@ -1,5 +1,8 @@
 #!/bin/zsh -ef
 
+# We need git-lfs for some repositories, pull in just its bin
+PATH="/opt/homebrew/opt/git-lfs/bin:${PATH}"
+
 notify() {
   local repo="${1:?}"
   local subject="${2:?}"
