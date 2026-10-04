@@ -105,7 +105,14 @@ source "${ETC_ZSH_DIR}"/aliases
 # Also include some additional completions
 source "${ETC_ZSH_DIR}"/completions
 
-# Discourage Unity Hub from editing my zshrc (Experimental)
-# Note that the header line alone was not enough, despite Gemini's claims
+# This is the end of my actual zshrc, but some 3rd software insists on editing zshrc, so we just
+# finish before their shenanigans take hold
+return
+
+# Here is the wall of shame of zshrc editors I can't yet disable
+
+# Added by Unity (https://docs.unity.com/en-us/hub)
+# I've tried just the header, and the header with commented out body, and it comes back each time
+
 # Unity CLI
-# . "/Users/robbie/.unity/env"
+. "/Users/robbie/.unity/env"
