@@ -451,6 +451,10 @@
                     "ignore_vendor_events": true,
                     "simple_modifications": [
                         {
+                            "from": { "key_code": "copy" },
+                            "to": [{ "consumer_key_code": "volume_increment" }]
+                        },
+                        {
                             "from": { "key_code": "escape" },
                             "to": [{ "key_code": "grave_accent_and_tilde" }]
                         },
@@ -467,16 +471,8 @@
                             "to": [{ "key_code": "left_command" }]
                         },
                         {
-                            "from": { "key_code": "copy" },
-                            "to": [{ "consumer_key_code": "volume_increment" }]
-                        },
-                        {
                             "from": { "key_code": "paste" },
                             "to": [{ "consumer_key_code": "volume_decrement" }]
-                        },
-                        {
-                            "from": { "key_code": "find" },
-                            "to": [{ "consumer_key_code": "play_or_pause" }]
                         }
                     ]
                 },
