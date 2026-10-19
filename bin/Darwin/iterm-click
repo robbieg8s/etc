@@ -27,23 +27,21 @@ then
   # - for iterm click, \1 arrives as an absolute path and script runs in /
   # - for tig, \1 arrives as an offset and script runs in cwd
   # but we assume only that it is correct relative to our directory
-  # Warning: Recent JetBrains updates have broken this, and i've not got a reliable workaround
-  # yet. See https://youtrack.jetbrains.com/issue/IJPL-249895
   dir="${file:A:h}"
   until [[ "${dir}" -ef / ]]
   do
       [[ -e "${dir}/package.json" ]] && { packageJsonDir="${dir}" ; }
       [[ -e "${dir}/${dir:t}.sln" ]] && {
           # Looks like a rider project
-          exec open -nb com.jetbrains.rider --args "${file}" ${line:+--line} ${line:+"${line}"}
+          exec open -nb com.jetbrains.rider --args ${line:+--line} ${line:+"${line}"} "${file}"
       }
       [[ -e "${dir}/.idea" && -n "${packageJsonDir}" ]] && {
           # Looks like a webstorm project
-          exec open -nb com.jetbrains.webstorm --args "${file}" ${line:+--line} ${line:+"${line}"}
+          exec open -nb com.jetbrains.webstorm --args ${line:+--line} ${line:+"${line}"} "${file}"
       }
       [[ -e "${dir}/.idea" && -d "${dir}/hugo" ]] && {
           # Hugo website, use webstorm
-          exec open -nb com.jetbrains.webstorm --args "${file}" ${line:+--line} ${line:+"${line}"}
+          exec open -nb com.jetbrains.webstorm --args ${line:+--line} ${line:+"${line}"} "${file}"
       }
       dir="${dir:h}"
   done
