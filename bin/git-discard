@@ -9,5 +9,5 @@ if git diff --exit-code --stat -- "$@"
 then
   print -u2 'No changes found'
 else
-  read -sq '?Really discard the above changes?' && git checkout -- "$@"
+  read -sq '?Really discard the above changes?' && echo && git checkout -- "$@"
 fi
