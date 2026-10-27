@@ -79,7 +79,7 @@ JQ_SAFARI="$(<<'END_JQ'
   { $AutoFillCreditCardData
   , $AutoFillFromAddressBook
   , $AutoFillMiscellaneousForms
-  , $AutoFillPasswords
+  , $AutoFillPasswordsInSafari
   , $IncludeDevelopMenu
   , $NSUserKeyEquivalents
   }
@@ -104,7 +104,7 @@ JQ_SAFARI="$(<<'END_JQ'
       , "Safari Settings, AutoFill Tab, uncheck 'Other forms'"
       ]
     end
-  , if $AutoFillPasswords | not
+  , if $AutoFillPasswordsInSafari | not
     then empty
     else
       [ "Safari Passwords AutoFill is not disabled"
