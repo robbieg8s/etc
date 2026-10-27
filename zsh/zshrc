@@ -94,7 +94,6 @@ zstyle ':completion:*' menu select=3
 # bindkey '...' menu-select
 setopt automenu
 
-
 autoload -U +X compinit && compinit
 
 ## Interactive aliases

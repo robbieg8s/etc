@@ -1,6 +1,11 @@
 #!/bin/false
 # This script is intended to be sourced
 
+# Darwin specific ssh config
+cat >> ~/.ssh/config<<END_SSH_CONFIG
+Include $HOME/.colima/ssh_config
+END_SSH_CONFIG
+
 # Install custom LaunchAgents, expanding environment variables as we do.
 # We do the expansion since launchd.plist(5) provides no mechanism for variability here, and i don't
 # want to hardcode my username. An alternative would be to put symlinks in a stable place, for
