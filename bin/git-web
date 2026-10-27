@@ -92,11 +92,11 @@ provider_url() {
   # this is zsh we can use %n$s printf conversions in future if we need to.
 
   # Bitbucket
-  local host_base_bitbucket_org='https://bitbucket.org/%s'
-  local host_branch_bitbucket_org='branch/%s'
-  local host_commit_bitbucket_org='commits/%s'
-  local host_file_bitbucket_org='src/%s/%s'
-  local host_default_bitbucket_org=''
+  local host_base_ssh_bitbucket_org='https://bitbucket.org/%s'
+  local host_branch_ssh_bitbucket_org='branch/%s'
+  local host_commit_ssh_bitbucket_org='commits/%s'
+  local host_file_ssh_bitbucket_org='src/%s/%s'
+  local host_default_ssh_bitbucket_org=''
 
   # Github
   local host_base_github_com='https://github.com/%s'
