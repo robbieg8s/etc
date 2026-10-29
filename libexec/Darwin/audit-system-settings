@@ -173,4 +173,21 @@ validateDefaultsWithJq com.apple.universalaccess <(<<<"${JQ_UNIVERSAL_ACCESS}") 
   "Pointer settings (mouse cursor) are not correct:" \
   ":; open 'x-apple.systempreferences:com.apple.preference.universalaccess?pointer'"
 
+JQ_RIDER="$(<<'END_JQ'
+.["com.jetbrains.rider"]
+| . as { $ApplePressAndHoldEnabled }
+| [ if $ApplePressAndHoldEnabled == false
+    then empty
+    else
+      [ "Key Repeat is not enabled"
+      ,  ":; defaults write com.jetbrains.rider ApplePressAndHoldEnabled -bool false"
+      ]
+    end
+  ]
+| map("\(.[])\n") | join("")
+END_JQ
+)"
+
+validateDefaultsWithJq com.jetbrains.rider <(<<<"${JQ_RIDER}") "Rider configuration errors:"
+
 [[ "${ERRORS}" -eq 0 ]] || fail "Audit failed (${ERRORS} errors) - see above"
