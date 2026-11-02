@@ -75,15 +75,17 @@ zshaddhistory_functions=($zshaddhistory_functions halfyak_etc_zshaddhistory_sqli
 }
 
 ## Environment/Command specific additional configuration
-# half_etc_after is defined in zshenv
-# The sequencing here is tricky, since on macOS we need to look up compinit's location to fix
-# the fpath so we get the right _git completion, but compinit itself uses the fpath to pick the
-# right _git. In general i'd do fpath reorganization earlier (to reduce surprises from anything
-# else that uses autoload). So put it right need compinit (to emphasize the coupling), and resolve
-# compinit before running the after. We hard (-R) resolve to improve the chance that i find out
-# if there are any breakages in this approach.
+# halfyak_etc_after is defined in zshenv
+#
+# The sequencing of after here here is tricky.
+# On macOS we need to look up compinit's location to fix the fpath so we get the right _git completion, but compinit
+# itself uses the fpath to pick the right _git. In general i'd do fpath reorganization earlier (to reduce surprises
+# from anything else that uses autoload), but also after should run as late as possible in principle. So put it right
+# near compinit (to emphasize the coupling), and resolve compinit before running the after. We hard (-R) resolve to
+# improve the chance that i find out if there are any breakages in this approach.
 
 autoload -R compinit
+# This is early since it modifies fpath on Darwin - see comment above
 halfyak_etc_after "${ZSHRC}"
 
 ## Autocompletion configuration
@@ -104,8 +106,8 @@ source "${ETC_ZSH_DIR}"/aliases
 # Also include some additional completions
 source "${ETC_ZSH_DIR}"/completions
 
-# This is the end of my actual zshrc, but some 3rd software insists on editing zshrc, so we just
-# finish before their shenanigans take hold
+# This is the end of my actual zshrc, but some 3rd party software insists on editing zshrc, so we
+# just finish before their shenanigans take hold.
 return
 
 # Here is the wall of shame of zshrc editors I can't yet disable
