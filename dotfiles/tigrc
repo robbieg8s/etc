@@ -11,8 +11,8 @@ bind generic <Up> none
 bind generic <Down> none
 
 # N brings up commit notes named so that my vi filetype finds it
-# Don't us n for this, in tig it works after / like it does in vi
-bind generic N !>vim -c '$' COMMIT_EDITMSG
+# Don't use n for this, in tig it works after / like it does in vi
+bind generic N !>vim COMMIT_EDITMSG
 # A very poor (y)ank, but good enough to pull text from tig into vi
 # Note that tig treats "" internally to split the following command,
 # which arranges to pass the yanked text as a single argument even
