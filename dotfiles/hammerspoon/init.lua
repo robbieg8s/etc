@@ -288,7 +288,7 @@ function normalizeWindow(screen, window, creation)
   local handlers = {
     ["com.googlecode.iterm2"] = function()
       -- iTerm
-      if (window:title() ~= "Default") then
+      if (creation and window:title() ~= "Default") then
         -- Don't touch non default iTerm windows - they are configured in iTerm
         frame = nil
       else
