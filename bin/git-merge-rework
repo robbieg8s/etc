@@ -14,7 +14,7 @@ git merge --squash "$@" || true
 rm -f ${(f)"$(git rev-parse --git-path SQUASH_MSG --git-path MERGE_MSG)"}
 
 # Unstage unconflicted files, which will also untrack completely new files.
-git diff --staged -z --name-only --diff-filter=u | git restore --staged --pathspec-file-nul --pathspec-from-file=-
+git diff --relative --staged -z --name-only --diff-filter=u | git restore --staged --pathspec-file-nul --pathspec-from-file=-
 [[ 0 -eq "${#pipestatus:#0}" ]]
 
 # Track new files, but don't stage their content
