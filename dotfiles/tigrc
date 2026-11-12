@@ -9,6 +9,13 @@ set show-untracked = false
 
 bind generic <Up> none
 bind generic <Down> none
+# Remove ! (revert) everywhere - i want ! for hunk navigation
+bind generic ! none
+
+# backward hunk navigation
+bind diff  ! :?^@@
+bind stage ! :?^@@
+
 
 # N brings up commit notes named so that my vi filetype finds it
 # Don't use n for this, in tig it works after / like it does in vi
