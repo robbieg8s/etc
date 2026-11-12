@@ -190,4 +190,37 @@ END_JQ
 
 validateDefaultsWithJq com.jetbrains.rider <(<<<"${JQ_RIDER}") "Rider configuration errors:"
 
+JQ_DOCK="$(<<'END_JQ'
+.["com.apple.dock"]
+| . as
+  { "appswitcher-dock-display": $appswitcherDockDisplay
+  , "autohide-delay": $autohideDelay
+  }
+| [ if $appswitcherDockDisplay
+    # In multi-monitor setups, this keeps the cmd-tab switcher on the "main" screen always
+    then empty
+    else
+      [ "App Switcher is not locked to Dock screen"
+      ,  ":; defaults write com.apple.dock appswitcher-dock-display -bool true"
+
+      ]
+    end
+  , if $autohideDelay == 10
+    # Slow dock pop out to 10 seconds (i really rarely use it)
+    then empty
+    else
+      [ "Dock hide delay is not set to 10"
+      ,  ":; defaults write com.apple.dock autohide-delay -int 10"
+
+      ]
+    end
+  ]
+| map("\(.[])\n") | join("")
+END_JQ
+)"
+
+validateDefaultsWithJq com.apple.dock <(<<<"${JQ_DOCK}") "Dock configuration errors:" \
+  "Fix as above, then:" \
+  ":; killall Dock"
+
 [[ "${ERRORS}" -eq 0 ]] || fail "Audit failed (${ERRORS} errors) - see above"
